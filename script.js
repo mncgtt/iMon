@@ -147,20 +147,23 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     clickwheel.addEventListener('touchstart', function(event) {
-        event.preventDefault(); 
+        event.preventDefault(); // NEW: Prevent default touch behavior for menu navigation
         if (!gameMode) { 
             isDragging = true; 
             const touch = event.touches[0];
             const rect = clickwheel.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + touch.clientY; // Fix: Use touch.clientY directly
+            const centerY = rect.top + rect.height / 2; // Corrected centerY calculation for touch
             startAngle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX);
         }
     });
     
     // MOUSE MOVE / TOUCH MOVE (Handles ongoing drag/push) - ATTACHED TO CLICKWHEEL
     clickwheel.addEventListener('mousemove', handleMenuRotation);
-    clickwheel.addEventListener('touchmove', handleMenuRotation); 
+    clickwheel.addEventListener('touchmove', function(event) {
+        event.preventDefault(); // NEW: Prevent default touch behavior for menu navigation
+        handleMenuRotation(event);
+    }); 
     
     // MOUSE UP / TOUCH END / MOUSE LEAVE (Stops drag/push) - ATTACHED TO DOCUMENT FOR ROBUSTNESS
     document.addEventListener('mouseup', () => {
