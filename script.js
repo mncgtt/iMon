@@ -72,10 +72,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle clickwheel rotation for menu navigation (still uses angle)
     function handleMenuRotation(event) {
         if (!isDragging || inSubMenu || gameMode) return; 
+    
+        let clientX, clientY;
+        if (event.touches && event.touches.length > 0) { // It's a touch event
+            clientX = event.touches[0].clientX;
+            clientY = event.touches[0].clientY;
+        } else { // It's a mouse event
+            clientX = event.clientX;
+            clientY = event.clientY;
+        }
+    
         const rect = clickwheel.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        const angle = Math.atan2(event.clientY - centerY, event.clientX - centerX);
+        const centerY = rect.top + rect.height / 2; // This is correct for rect-relative center
+        
+        const angle = Math.atan2(clientY - centerY, clientX - centerX);
         const angleDiff = angle - startAngle;
         if (Math.abs(angleDiff) > Math.PI / 8) { 
             if (angleDiff > 0) updateSelection(currentIndex + 1);
@@ -147,13 +158,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     clickwheel.addEventListener('touchstart', function(event) {
-        event.preventDefault(); // NEW: Prevent default touch behavior for menu navigation
+        // REMOVED event.preventDefault() from here
         if (!gameMode) { 
             isDragging = true; 
             const touch = event.touches[0];
             const rect = clickwheel.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2; // Corrected centerY calculation for touch
+            const centerY = rect.top + rect.height / 2; 
             startAngle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX);
         }
     });
@@ -161,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // MOUSE MOVE / TOUCH MOVE (Handles ongoing drag/push) - ATTACHED TO CLICKWHEEL
     clickwheel.addEventListener('mousemove', handleMenuRotation);
     clickwheel.addEventListener('touchmove', function(event) {
-        event.preventDefault(); // NEW: Prevent default touch behavior for menu navigation
+        event.preventDefault(); // Keep this here to prevent scrolling during a drag
         handleMenuRotation(event);
     }); 
     
@@ -185,49 +196,23 @@ document.addEventListener('DOMContentLoaded', function() {
         const action = event.target.closest('[data-action]')?.dataset.action;
         if (!action) return;
     
-        // If a game is active, handle game-specific buttons
-        if (gameMode) {
-            if (action === 'menu') {
-                exitGame(); // Exit the current game
-            } 
-            // The 'select' button's action is now handled by its direct onclick assignment in initBreakoutGame
-            return; 
-        }
-    
-        // Normal menu navigation
-        switch(action) {
-            case 'menu':
-                if (inSubMenu) {
-                    restoreMenu(); // Go back to main menu from a sub-page
-                }
-                break;
-            case 'forward':
-                updateSelection(currentIndex + 1);
-                break;
-            case 'back':
-                updateSelection(currentIndex - 1);
-                break;
-            case 'playpause':
-                console.log('Play/Pause button clicked');
-                // You could add music playback logic here
-                break;
-            case 'select':
+        // NEW: Unified handling for 'select' action
+        if (action === 'select') {
+            if (gameMode) {
+                launchBall(); // In game mode, select launches ball/restarts game
+            } else {
+                // In menu mode, select performs menu action
                 const selectedText = menuItems[currentIndex].textContent.trim();
                 if (links[selectedText]) {
-                    // Open external links
                     if (selectedText === "Mail") {
                         window.location.href = links[selectedText];
                     } else {
                         window.open(links[selectedText], '_blank');
                     }
                 } else {
-                    // Handle internal sections
                     if (selectedText === "Games") {
-                        // When 'Games' is selected and center button is pressed,
-                        // this is the *initial* start of the game.
                         startBreakoutGame(); 
                     } else {
-                        // Default placeholder for other non-link menu items
                         screenEl.innerHTML = `
                             <div id="display" style="width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center;">
                                 <div style="text-align:center; width:100%; color:#000;">
@@ -239,6 +224,33 @@ document.addEventListener('DOMContentLoaded', function() {
                         inSubMenu = true;
                     }
                 }
+            }
+            return; // Handled select action, exit
+        }
+    
+        // Handle other buttons (menu, forward, back, play/pause)
+        if (gameMode) { // If in game mode, only 'menu' is handled here
+            if (action === 'menu') {
+                exitGame(); 
+            }
+            return; // All other buttons are ignored in game mode
+        }
+    
+        // Normal menu navigation for non-select buttons
+        switch(action) {
+            case 'menu':
+                if (inSubMenu) {
+                    restoreMenu(); 
+                }
+                break;
+            case 'forward':
+                updateSelection(currentIndex + 1);
+                break;
+            case 'back':
+                updateSelection(currentIndex - 1);
+                break;
+            case 'playpause':
+                console.log('Play/Pause button clicked');
                 break;
         }
     });
@@ -396,7 +408,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 bricks[r] = [];
                 const currentColumnCount = maxBrickColumnCount - r; 
                 
-                const totalRowWidth = (currentColumnCount * uniformBrickWidth) + ((currentColumnCount - 1) * brickPadding);
+                const totalRowWidth = (currentColumnCount * uniformBrickWidth) + ((currentColumnCount - 1) * brickPadding); // Fix: padding for 1 brick is 0
                 
                 const rowOffsetLeft = (canvasDisplayWidth - totalRowWidth) / 2;
     
@@ -623,7 +635,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 paused = true; 
                 gameWon = false; // Reset gameWon flag for a new game start
                 
-                // NEW: Restart the animation loop if it was stopped
+                // NEW: Ensure the animation loop is running if it was stopped
                 if (!animationFrameId) {
                     animationFrameId = requestAnimationFrame(draw);
                 }
@@ -642,7 +654,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Ball's position (ballX, ballY) is already set by the paddle's current position in the draw loop
                 // No need to reset ballX here.
     
-                // NEW: Restart the animation loop if it was stopped
+                // NEW: Ensure the animation loop is running if it was stopped
                 if (!animationFrameId) {
                     animationFrameId = requestAnimationFrame(draw);
                 }
