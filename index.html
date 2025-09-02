@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iPod Interface</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="styles.css">
+
+<!-- Google Fonts for 'Inter' -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
+</head>
+<body>
+<div class="ipod-wrapper">
+   <div class="ipod-container">
+       <div class="screen" id="screen">
+           <!-- LEFT MENU -->
+           <div id="display">
+               <div id="menu-title">iPod</div>
+               <div id="menu-container">
+                   <ul id="menu-list">
+                       <li class="menu-item active" data-preview="images/linkedin-preview.png">LinkedIn</li>
+                       <li class="menu-item" data-preview="images/behance-preview.png">Behance</li>
+                       <li class="menu-item" data-preview="images/mail-preview.png">Mail</li>
+                       <li class="menu-item" data-preview="images/games-preview.png">Games</li>
+                   </ul>
+               </div>
+           </div>
+
+           <!-- RIGHT PREVIEW -->
+           <div id="right-display">
+               <img src="images/linkedin-preview.png" alt="Preview" class="display-icon" id="preview-image">
+           </div>
+       </div>
+
+       <!-- CLICK WHEEL -->
+       <div class="clickwheel" id="clickwheel">
+           <div class="button top" id="menu-button" data-action="menu">
+               <img src="images/menu-icon.svg" alt="Menu" class="ipod-icon">
+           </div>
+           <div class="button right" id="forward-button" data-action="forward">
+               <img src="images/forward-icon.svg" alt="Forward" class="ipod-icon">
+           </div>
+           <div class="button bottom" id="play-pause-button" data-action="playpause">
+               <img src="images/play-icon.svg" alt="Play" class="ipod-icon" id="play-icon">
+           </div>
+           <div class="button left" id="back-button" data-action="back">
+               <img src="images/back-icon.svg" alt="Back" class="ipod-icon">
+           </div>
+           <div class="center-button" id="select-button" data-action="select"></div>
+       </div>
+   </div>
+</div>
+<!-- Hammer.js library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+<!-- Your main script -->
+<script src="script.js"></script>
+</body>
+</html>

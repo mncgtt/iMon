@@ -1,0 +1,261 @@
+/* If you were using a local @font-face for SF Pro, you can remove or comment it out if you prefer Inter */
+/* @font-face {
+   font-family: 'SF Pro';
+   src: local('SF Pro Display'), local('SF Pro Text'), local('San Francisco');
+} */
+
+/* Disable scrolling */
+html, body {
+   overflow: hidden;
+   margin: 0;
+   padding: 0;
+   height: 100%;
+   width: 100%;
+}
+
+/* Background image, NO overlay */
+body {
+   background: url('images/background.jpg') no-repeat center center fixed;
+   background-size: cover;
+   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; /* Changed font-family */
+   display: flex;
+   justify-content: center;
+   align-items: center;
+}
+
+/* ipod-wrapper is just a flex container */
+.ipod-wrapper {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+}
+
+/* Define a base scale factor for 1mm */
+/* Default for desktop: 1mm = 4px (so 40mm = 160px) */
+/* This value will be overridden by media queries */
+:root {
+   --mm-to-px: 4px; /* Default desktop scale: 1mm = 4px (40mm iPod becomes 160px wide) */
+}
+
+/* Base iPod container size */
+.ipod-container {
+   width: calc(40 * var(--mm-to-px)); /* 40mm */
+   height: calc(55 * var(--mm-to-px)); /* 55mm */
+   aspect-ratio: 40 / 55; /* Maintain aspect ratio */
+   
+   background: linear-gradient(145deg, #e6e6e6, #cccccc);
+   border-radius: calc(4 * var(--mm-to-px)); /* 4mm */
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   padding: calc(3 * var(--mm-to-px)); /* 3mm */
+   box-sizing: border-box;
+   box-shadow: 
+       0 calc(2 * var(--mm-to-px)) calc(6 * var(--mm-to-px)) rgba(0,0,0,0.07),
+       inset 0 calc(2 * var(--mm-to-px)) calc(3 * var(--mm-to-px)) rgba(255,255,255,0.1),
+       inset 0 calc(-2 * var(--mm-to-px)) calc(3 * var(--mm-to-px)) rgba(0,0,0,0.05);
+   position: relative;
+   overflow: hidden;
+}
+
+.ipod-container::before {
+   content: '';
+   position: absolute;
+   top: 0; left: 0; right: 0; bottom: 0;
+   border-radius: calc(4 * var(--mm-to-px));
+   box-shadow: 
+       inset calc(1 * var(--mm-to-px)) calc(1 * var(--mm-to-px)) calc(2 * var(--mm-to-px)) rgba(255,255,255,0.1),
+       inset calc(-1 * var(--mm-to-px)) calc(-1 * var(--mm-to-px)) calc(2 * var(--mm-to-px)) rgba(0,0,0,0.05);
+   pointer-events: none;
+}
+
+.screen {
+   width: calc(35 * var(--mm-to-px)); /* 35mm */
+   height: calc(22.5 * var(--mm-to-px)); /* 22.5mm */
+   background-color: #fff;
+   margin-bottom: calc(3 * var(--mm-to-px)); /* 3mm */
+   display: flex;
+   flex-direction: row;
+   box-sizing: border-box;
+   border-radius: calc(1 * var(--mm-to-px)); /* 1mm */
+   border-top: calc(0.7 * var(--mm-to-px)) solid #333333; /* 0.7mm */
+   border-bottom: calc(0.7 * var(--mm-to-px)) solid #333333; /* 0.7mm */
+   border-left: calc(1.5 * var(--mm-to-px)) solid #333333; /* 1.5mm */
+   border-right: calc(1.5 * var(--mm-to-px)) solid #333333; /* 1.5mm */
+   box-shadow: 
+       inset 0 0 calc(2 * var(--mm-to-px)) rgba(0,0,0,0.2),
+       0 0 calc(1 * var(--mm-to-px)) rgba(255,255,255,0.5);
+   overflow: hidden;
+   position: relative;
+}
+
+#display {
+   color: #000;
+   font-size: calc(2 * var(--mm-to-px)); /* 2mm */
+   font-weight: bold;
+   width: calc(16 * var(--mm-to-px)); /* 16mm */
+   display: flex;
+   flex-direction: column;
+}
+
+#menu-title {
+   position: sticky;
+   top: 0;
+   z-index: 10;
+   font-weight: bold;
+   padding: calc(0.5 * var(--mm-to-px)) calc(1 * var(--mm-to-px)); /* 0.5mm 1mm */
+   font-size: calc(1.3 * var(--mm-to-px)); /* 1.3mm */
+   background: linear-gradient(to bottom, #f0f0f0, #e6e6e6);
+   color: #000;
+   border-top-left-radius: calc(0.5 * var(--mm-to-px)); /* 0.5mm */
+   border-top-right-radius: calc(0.5 * var(--mm-to-px)); /* 0.5mm */
+   width: 100%;
+   box-sizing: border-box;
+   box-shadow: inset 0 calc(-0.5 * var(--mm-to-px)) calc(1 * var(--mm-to-px)) rgba(0,0,0,0.15);
+}
+
+#menu-container {
+   position: relative;
+   overflow-y: auto;
+   overflow-x: hidden;
+   flex-grow: 1;
+}
+
+/* Scrollbar styling */
+#menu-container::-webkit-scrollbar {
+   width: calc(1px * var(--mm-to-px) / 4px); /* Keep 1px relative to base scale */
+}
+#menu-container::-webkit-scrollbar-thumb {
+   background-color: #888;
+}
+#menu-container {
+   scrollbar-width: thin;
+   scrollbar-color: #888 #f0f0f0;
+}
+
+#menu-list {
+   list-style-type: none;
+   padding: 0 calc(0.8 * var(--mm-to-px)); /* 0.8mm */
+   margin: 0;
+}
+
+.menu-item {
+   padding: calc(0.4 * var(--mm-to-px)) 0; /* 0.4mm */
+   font-weight: bold;
+   font-size: calc(1.6 * var(--mm-to-px)); /* 1.6mm */
+}
+
+.menu-item.active {
+   background: linear-gradient(to bottom, #4db8ff, #007aff);
+   color: #fff;
+   margin-left: calc(-1 * var(--mm-to-px)); /* -1mm */
+   margin-right: calc(-1 * var(--mm-to-px)); /* -1mm */
+   padding-left: calc(1 * var(--mm-to-px)); /* 1mm */
+   padding-right: calc(1 * var(--mm-to-px)); /* 1mm */
+   box-shadow: inset 0 calc(-1 * var(--mm-to-px)) calc(1 * var(--mm-to-px)) rgba(0, 0, 0, 0.1);
+}
+
+/* Right-side display */
+#right-display {
+   width: calc(16 * var(--mm-to-px)); /* 16mm */
+   height: 100%;
+   background: linear-gradient(
+       to right,
+       rgba(0,0,0,1) 0%,
+       rgba(0,0,0,0.9) 2%,
+       rgba(0,0,0,0.6) 4%,
+       rgba(0,0,0,0.3) 7%,
+       rgba(0,0,0,0.15) 9%,
+       rgba(0,0,0,0) 12%
+   ), transparent;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   padding: 0;
+}
+
+.display-icon {
+   width: 100%;
+   height: 100%;
+   object-fit: cover;
+   opacity: 0.8;
+   user-select: none;
+   -webkit-user-drag: none;
+}
+
+/* Clickwheel */
+.clickwheel {
+   width: calc(22 * var(--mm-to-px)); /* 22mm */
+   height: calc(22 * var(--mm-to-px)); /* 22mm */
+   background: linear-gradient(145deg, #f0f0f0, #ffffff);
+   border-radius: 50%;
+   position: relative;
+   box-shadow: 
+       0 0 calc(2 * var(--mm-to-px)) rgba(0,0,0,0.1),
+       inset 0 0 calc(4 * var(--mm-to-px)) rgba(255,255,255,0.5);
+}
+
+.button {
+   position: absolute;
+   width: calc(6 * var(--mm-to-px)); /* 6mm */
+   height: calc(6 * var(--mm-to-px)); /* 6mm */
+   display: flex;
+   justify-content: center;
+   align-items: center;
+}
+
+.top { top: -5%; left: 50%; transform: translateX(-50%); }
+.right { right: -3%; top: 50%; transform: translateY(-50%); }
+.bottom { bottom: -5%; left: 50%; transform: translateX(-50%); }
+.left { left: -3%; top: 50%; transform: translateY(-50%); }
+
+.center-button {
+   position: absolute;
+   width: calc(11 * var(--mm-to-px)); /* 11mm */
+   height: calc(11 * var(--mm-to-px)); /* 11mm */
+   background: radial-gradient(ellipse at bottom center, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 60%),
+               linear-gradient(-145deg, #c0c0c0, #cccccc);
+   border-radius: 50%;
+   top: 50%;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   box-shadow: 
+       inset 0 calc(-0.2 * var(--mm-to-px)) calc(0.5 * var(--mm-to-px)) rgba(255,255,255,0.25),
+       inset 0 calc(0.2 * var(--mm-to-px)) calc(0.8 * var(--mm-to-px)) rgba(0,0,0,0.06);
+}
+
+.ipod-icon {
+   width: calc(5 * var(--mm-to-px)); /* 5mm */
+   height: calc(5 * var(--mm-to-px)); /* 5mm */
+   object-fit: contain;
+   user-select: none;
+   -webkit-user-drag: none;
+   pointer-events: none;
+}
+
+/* Desktop sizing */
+@media (min-width: 769px) {
+   .ipod-container {
+       /* Desktop: 1mm = 4px (40mm iPod = 160px wide) */
+       /* Constrain to 90% of viewport or 400px, whichever is smaller */
+       width: min(400px, 90vw); 
+       height: auto;
+       max-height: 90vh; /* Ensure it fits vertically on smaller desktop screens */
+       --mm-to-px: calc(min(400px, 90vw) / 40); /* Calculate mm-to-px based on actual width */
+   }
+}
+
+/* Mobile responsive sizing */
+@media (max-width: 768px) {
+   .ipod-container {
+       /* Mobile: 1mm = (scale factor) * vw or svh */
+       /* Calculate scale factor to fit 90% of the smaller viewport dimension */
+       width: min(90vw, calc(90svh * (40 / 55)));
+       height: auto;
+       max-width: 90vw;
+       max-height: 90svh;
+       
+       /* Calculate mm-to-px based on actual width */
+       --mm-to-px: calc(min(90vw, calc(90svh * (40 / 55))) / 40); 
+   }
+}
