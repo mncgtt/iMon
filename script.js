@@ -1012,8 +1012,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
         function draw() {
             const gradient = ctx.createLinearGradient(0, 0, 0, currentCanvasDisplayHeight);
-            gradient.addColorStop(0, '#cae9ff'); // Lighter blue at the top
-            gradient.addColorStop(1, '#89c2d9'); // Light blue at the bottom
+            gradient.addColorStop(0, '#e1e1e1'); // Lighter blue at the top
+            gradient.addColorStop(1, '#c7c7c7'); // Light blue at the bottom
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvasDisplayWidth, currentCanvasDisplayHeight); 
     
