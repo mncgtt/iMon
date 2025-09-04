@@ -72,15 +72,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Function to update menu selection
+    // Function to update menu selection without animation
     function updateSelection(newIndex) {
         if (newIndex < 0 || newIndex >= menuItems.length) return;
+        
         menuItems[currentIndex].classList.remove('active');
         currentIndex = newIndex;
         menuItems[currentIndex].classList.add('active');
-        menuItems[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        menuItems[currentIndex].scrollIntoView({ block: 'nearest' });
+        
+        // Update preview image immediately without animation
         const previewSrc = menuItems[currentIndex].dataset.preview;
-        if (previewSrc) previewImage.src = previewSrc;
+        if (previewSrc) {
+            previewImage.src = previewSrc;
+        }
     }
     
     // --- Main Menu Hammer.js Navigation Functions ---
@@ -154,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 themeItems[themeIndex].classList.remove('active');
                 themeIndex++;
                 themeItems[themeIndex].classList.add('active');
-                themeItems[themeIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                themeItems[themeIndex].scrollIntoView({ block: 'nearest' });
                 
                 // Update preview image if in theme menu
                 if (inThemeMenu) {
@@ -173,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 themeItems[themeIndex].classList.remove('active');
                 themeIndex--;
                 themeItems[themeIndex].classList.add('active');
-                themeItems[themeIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                themeItems[themeIndex].scrollIntoView({ block: 'nearest' });
                 
                 // Update preview image if in theme menu
                 if (inThemeMenu) {
@@ -219,7 +224,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (angleDelta > Math.PI) angleDelta -= 2 * Math.PI;
             if (angleDelta < -Math.PI) angleDelta += 2 * Math.PI;
     
-            const sensitivity = 150; 
+            // Increase sensitivity for better control
+            const sensitivity = 200; // Increased from 150
             let newPaddleX = initialPaddleX + (angleDelta * sensitivity);
             
             const minPaddleX = 0;
@@ -227,15 +233,18 @@ document.addEventListener('DOMContentLoaded', function() {
     
             if (newPaddleX < minPaddleX) {
                 newPaddleX = minPaddleX;
-                initialClickwheelAngle = currentClickwheelAngle; 
-                initialPaddleX = minPaddleX;
             } else if (newPaddleX > maxPaddleX) {
                 newPaddleX = maxPaddleX;
-                initialClickwheelAngle = currentClickwheelAngle;
-                initialPaddleX = maxPaddleX;
             }
             
+            // Update paddle position immediately
             paddleX = newPaddleX;
+            
+            // Reset initial values more frequently for smoother control
+            if (Math.abs(angleDelta) > Math.PI / 4) {
+                initialClickwheelAngle = currentClickwheelAngle;
+                initialPaddleX = paddleX;
+            }
         }
     }
     
@@ -292,14 +301,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 } else {
                     if (selectedText === "Games") {
-                        // Create a canvas element with animation
-                        screenEl.innerHTML = `<canvas id="breakout-game" class="slide-in-right" style="background:black; display:block; margin:auto; width:100%; height:100%;"></canvas>`;
+                        // Create a canvas element without animation
+                        screenEl.innerHTML = `<canvas id="breakout-game" style="background:black; display:block; margin:auto; width:100%; height:100%;"></canvas>`;
                         
-                        // Initialize game after animation has a chance to start
-                        setTimeout(() => {
-                            const screenRect = screenEl.getBoundingClientRect();
-                            initBreakoutGame(screenRect.width, screenRect.height);
-                        }, 50);
+                        // Initialize game immediately
+                        const screenRect = screenEl.getBoundingClientRect();
+                        initBreakoutGame(screenRect.width, screenRect.height);
                         
                         gameMode = true;
                         inSubMenu = true;
@@ -319,12 +326,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                         // Disable menu Hammer.js when game starts
                         menuHammerManager.set({ enable: false });
+                        // Enable game Hammer.js
+                        gameHammerManager.set({ enable: true });
                     } else if (selectedText === "Settings") {
                         showSettingsMenu();
                     } else {
-                        // For other menu items, create a sliding animation for the "Opening..." screen
+                        // For other menu items, create the "Opening..." screen without animation
                         screenEl.innerHTML = `
-                            <div class="slide-in-right" style="width:100%; height:100%; display:flex; justify-content:center; align-items:center; background:white;">
+                            <div style="width:100%; height:100%; display:flex; justify-content:center; align-items:center; background:white;">
                                 <div style="text-align:center; width:100%; color:#000;">
                                     <h3 style="font-size:3mm;">${selectedText}</h3>
                                     <p style="font-size:2mm;">Opening...</p>
@@ -393,7 +402,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     settingItems[settingIndex].classList.remove('active');
                     settingIndex++;
                     settingItems[settingIndex].classList.add('active');
-                    settingItems[settingIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    settingItems[settingIndex].scrollIntoView({ block: 'nearest' });
                 }
                 break;
             case 'back':
@@ -401,7 +410,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     settingItems[settingIndex].classList.remove('active');
                     settingIndex--;
                     settingItems[settingIndex].classList.add('active');
-                    settingItems[settingIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    settingItems[settingIndex].scrollIntoView({ block: 'nearest' });
                 }
                 break;
         }
@@ -425,9 +434,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     themeItems[themeIndex].classList.remove('active');
                     themeIndex++;
                     themeItems[themeIndex].classList.add('active');
-                    themeItems[themeIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    themeItems[themeIndex].scrollIntoView({ block: 'nearest' });
                     
-                    // Update the preview image
+                    // Update the preview image immediately
                     if (previewImage && themeItems[themeIndex].dataset.preview) {
                         previewImage.src = themeItems[themeIndex].dataset.preview;
                     }
@@ -438,9 +447,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     themeItems[themeIndex].classList.remove('active');
                     themeIndex--;
                     themeItems[themeIndex].classList.add('active');
-                    themeItems[themeIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    themeItems[themeIndex].scrollIntoView({ block: 'nearest' });
                     
-                    // Update the preview image
+                    // Update the preview image immediately
                     if (previewImage && themeItems[themeIndex].dataset.preview) {
                         previewImage.src = themeItems[themeIndex].dataset.preview;
                     }
@@ -451,10 +460,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initial state setup
     menuItems[currentIndex].classList.add('active');
-    menuItems[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    menuItems[currentIndex].scrollIntoView({ block: 'nearest' });
     previewImage.src = menuItems[currentIndex].dataset.preview;
     
-    // Function to restore the main menu view
+    // Function to restore the main menu view without animation
     function restoreMenu() {
         console.log("Restoring menu...");
         
@@ -474,7 +483,7 @@ document.addEventListener('DOMContentLoaded', function() {
             gameHammerManager.set({ enable: false });
         }
         
-        // Reset flags
+        // Reset flags immediately
         inSubMenu = false;
         inSettingsMenu = false;
         inThemeMenu = false;
@@ -482,9 +491,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Store the current preview image path before rebuilding the menu
         const currentPreviewPath = menuItems[currentIndex].dataset.preview;
         
-        // Create menu HTML with animation class
+        // Create menu HTML without animation class
         const menuHTML = `
-            <div id="display" class="slide-in-left">
+            <div id="display">
                 <div id="menu-title">iPod</div>
                 <div id="menu-container">
                     <ul id="menu-list">
@@ -496,12 +505,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     </ul>
                 </div>
             </div>
-            <div id="right-display" class="slide-in-left">
+            <div id="right-display">
                 <img src="${currentPreviewPath}" alt="Preview" class="display-icon" id="preview-image">
             </div>
         `;
         
-        // Replace screen content
+        // Replace screen content immediately
         screenEl.innerHTML = menuHTML;
         
         // Reinitialize menu items and event listeners
@@ -510,10 +519,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Make sure the active item is visible
         menuItems[currentIndex].classList.add('active');
-        menuItems[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        menuItems[currentIndex].scrollIntoView({ block: 'nearest' });
     }
     
-    // Function to show the Settings menu
+    // Function to show the Settings menu without animation
     function showSettingsMenu() {
         inSubMenu = true;
         inSettingsMenu = true;
@@ -524,7 +533,7 @@ document.addEventListener('DOMContentLoaded', function() {
         settingsHammerManager.set({ enable: true });
         
         screenEl.innerHTML = `
-            <div id="display" class="slide-in-right" style="width:100%;">
+            <div id="display" style="width:100%;">
                 <div id="menu-title">Settings</div>
                 <div id="menu-container">
                     <ul id="menu-list">
@@ -535,6 +544,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
     
+    // Function to show the Theme menu without animation
     function showThemeMenu() {
         inSubMenu = true;
         inSettingsMenu = false;
@@ -553,7 +563,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         
         screenEl.innerHTML = `
-            <div id="display" class="slide-in-right">
+            <div id="display">
                 <div id="menu-title">Device Theme</div>
                 <div id="menu-container">
                     <ul id="menu-list">
@@ -563,7 +573,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </ul>
                 </div>
             </div>
-            <div id="right-display" class="slide-in-right">
+            <div id="right-display">
                 <img src="${themePreviews[currentTheme]}" alt="Preview" class="display-icon" id="preview-image">
             </div>
         `;
@@ -578,16 +588,20 @@ document.addEventListener('DOMContentLoaded', function() {
             themeItems[themeIndex].classList.remove('active');
             themeIndex = newIndex;
             themeItems[themeIndex].classList.add('active');
-            themeItems[themeIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            themeItems[themeIndex].scrollIntoView({ block: 'nearest' });
+            
+            // Update preview image immediately
             const previewSrc = themeItems[themeIndex].dataset.preview;
-            if (previewSrc && previewImage) previewImage.src = previewSrc;
+            if (previewSrc && previewImage) {
+                previewImage.src = previewSrc;
+            }
         }
         
         // Store for use in clickwheel navigation
         window.updateThemeSelection = updateThemeSelection;
     }
     
-    // Function to apply the selected theme
+    // Function to apply the selected theme with animation
     function applyTheme(theme) {
         // Remove any existing theme
         document.body.classList.remove('theme-light', 'theme-dark', 'theme-mint');
@@ -598,8 +612,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Apply the new theme class
         document.body.classList.add('theme-' + theme);
         
-        // Update iPod appearance based on theme
+        // Update iPod appearance based on theme with animation
         const ipodContainer = document.querySelector('.ipod-container');
+        ipodContainer.style.transition = 'background 0.5s ease';
         
         if (theme === 'light') {
             ipodContainer.style.background = 'linear-gradient(145deg, #e6e6e6, #cccccc)';
@@ -676,16 +691,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
         allGameImagesLoadedPromise.then(() => {
             console.log("All game images confirmed loaded. Proceeding with game setup.");
+            
             screenEl.innerHTML = `
                 <canvas id="breakout-game" style="background:black; display:block; margin:auto; width:100%; height:100%;"></canvas>
             `;
             const screenRect = screenEl.getBoundingClientRect();
-            setTimeout(() => initBreakoutGame(screenRect.width, screenRect.height), 50); 
+            initBreakoutGame(screenRect.width, screenRect.height);
             gameMode = true; 
             console.log("gameMode set to true.");
     
-            // NEW: Initialize Hammer.js for game paddle control
-            if (!gameHammerManager) { // Renamed from hammerManager
+            // Initialize Hammer.js for game paddle control
+            if (!gameHammerManager) {
                 console.log("Initializing Hammer.js manager for circular pan (game)..");
                 gameHammerManager = new Hammer.Manager(clickwheel);
                 gameHammerManager.add(new Hammer.Pan({ threshold: 0 })); 
@@ -696,12 +712,14 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 console.log("Game Hammer.js manager already initialized.");
             }
-            // NEW: Disable menu Hammer.js when game starts
+            // Disable menu Hammer.js when game starts
             menuHammerManager.set({ enable: false });
+            // Enable game Hammer.js
+            gameHammerManager.set({ enable: true });
         });
     }
     
-    // Function to exit the game
+    // Function to exit the game without animation
     function exitGame() {
         console.log("Exiting game...");
         gameMode = false; 
@@ -709,9 +727,13 @@ document.addEventListener('DOMContentLoaded', function() {
             cancelAnimationFrame(animationFrameId); 
             animationFrameId = null;
         }
-        // NEW: Enable menu Hammer.js when exiting game
+        // Enable menu Hammer.js when exiting game
         if (menuHammerManager) {
             menuHammerManager.set({ enable: true });
+        }
+        // Disable game Hammer.js
+        if (gameHammerManager) {
+            gameHammerManager.set({ enable: false });
         }
         restoreMenu(); 
     }
@@ -720,7 +742,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updatePaddlePosition() {
         if (!gameMode || gameWon) return;
         
-        const paddleMoveSpeed = 8; // Adjusted speed (was 12, now 8 for slower movement)
+        const paddleMoveSpeed = 3; // Increased speed for better control
         
         if (keyState.ArrowLeft) {
             paddleX -= paddleMoveSpeed;
@@ -753,7 +775,7 @@ document.addEventListener('DOMContentLoaded', function() {
         canvas.height = currentCanvasDisplayHeight * dpr; 
         ctx.scale(dpr, dpr);
     
-        paddleWidth = canvasDisplayWidth * 0.25; 
+        paddleWidth = canvasDisplayWidth * 0.18; 
         let paddleHeight = currentCanvasDisplayHeight * 0.03; 
         paddleX = (canvasDisplayWidth - paddleWidth) / 2; 
         let ballRadius = canvasDisplayWidth * 0.02; 
@@ -1116,9 +1138,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     
         function launchBall() {
+            console.log("launchBall called, gameWon:", gameWon, "ballAttachedToPaddle:", ballAttachedToPaddle, "paused:", paused);
+            
             if (gameWon) { 
+                console.log("Game won, starting new game");
                 startGame(); 
             } else if (ballAttachedToPaddle && paused) { 
+                console.log("Launching ball from paddle");
                 ballAttachedToPaddle = false; 
                 running = true; 
                 paused = false; 
@@ -1127,44 +1153,116 @@ document.addEventListener('DOMContentLoaded', function() {
                 ballDX = 0;
                 ballDY = -ballSpeed;
     
+                console.log("Ball launched with speed:", ballSpeed, "direction:", ballDX, ballDY);
+    
                 if (!animationFrameId) {
                     animationFrameId = requestAnimationFrame(draw);
                 }
+            } else {
+                console.log("Cannot launch ball: conditions not met");
             }
         }
     
         document.getElementById('menu-button').onclick = exitGame; 
-        document.getElementById('select-button').onclick = launchBall; 
+        
+        // Use addEventListener instead of direct assignment for better compatibility
+        document.getElementById('select-button').addEventListener('click', function() {
+            console.log("Select button clicked, calling launchBall");
+            launchBall();
+        });
+    
+        // Make launchBall available globally for space bar handling
+        window.gameLaunchBall = launchBall;
+        window.startGame = startGame;
     
         initBricks();
         animationFrameId = requestAnimationFrame(draw); 
     }
     
-    // Keyboard Input Handler for key press and release
+    // Keyboard Input Handler for key press and release with improved game controls
     function handleKeyboardInput(event) {
-        // Only respond if in game mode, not won, AND canvas dimensions are initialized
-        if (gameMode && !gameWon && canvasDisplayWidth !== 0 && paddleWidth !== 0) {
-            // Handle arrow keys for paddle movement
-            if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-                keyState[event.key] = (event.type === 'keydown');
-            }
+        // Handle space bar for game start regardless of mode
+        if (event.key === " " && event.type === 'keydown') {
+            console.log("Space bar pressed, game mode:", gameMode);
             
-            // Handle space bar to launch ball
-            if (event.key === " " && event.type === 'keydown') {
-                if (ballAttachedToPaddle && paused) {
-                    ballAttachedToPaddle = false;
-                    running = true;
-                    paused = false;
-                } else if (gameWon) {
-                    // If game is won, restart the game
-                    initBreakoutGame(canvasDisplayWidth, canvas.height / window.devicePixelRatio);
+            if (gameMode) {
+                console.log("In game mode, ball attached:", ballAttachedToPaddle, "paused:", paused);
+                if (gameWon) {
+                    console.log("Game won, restarting game");
+                    if (typeof window.startGame === 'function') {
+                        window.startGame();
+                    }
+                } else if (ballAttachedToPaddle && paused) {
+                    console.log("Launching ball");
+                    if (typeof window.gameLaunchBall === 'function') {
+                        window.gameLaunchBall();
+                    }
+                }
+            } else {
+                console.log("Not in game mode, checking if Games is selected");
+                const selectedText = menuItems[currentIndex].textContent.trim();
+                if (selectedText === "Games") {
+                    console.log("Games selected, starting game");
+                    startBreakoutGame();
                 }
             }
-        } else if (!gameMode && event.key === " " && event.type === 'keydown') {
-            // If not in game mode and space is pressed, check if Games is selected
-            const selectedText = menuItems[currentIndex].textContent.trim();
-            if (selectedText === "Games") {
-                startBreakoutGame();
+        }
+        
+        // Game mode controls
+        if (gameMode && !gameWon && canvasDisplayWidth !== 0 && paddleWidth !== 0) {
+            // Handle arrow keys for paddle movement
+            if (event.key === "ArrowLeft") {
+                keyState.ArrowLeft = (event.type === 'keydown');
+                // Move paddle left immediately for better responsiveness
+                if (event.type === 'keydown') {
+                    paddleX -= 8; // Reduced from 15 to 8 for slower movement
+                    if (paddleX < 0) paddleX = 0;
+                }
+            }
+            if (event.key === "ArrowRight") {
+                keyState.ArrowRight = (event.type === 'keydown');
+                // Move paddle right immediately for better responsiveness
+                if (event.type === 'keydown') {
+                    paddleX += 8; // Reduced from 15 to 8 for slower movement
+                    if (paddleX + paddleWidth > canvasDisplayWidth) 
+                        paddleX = canvasDisplayWidth - paddleWidth;
+                }
+            }
+            
+            // Enter key can also launch ball
+            if (event.key === "Enter" && event.type === 'keydown') {
+                if (ballAttachedToPaddle && paused) {
+                    if (typeof window.gameLaunchBall === 'function') {
+                        window.gameLaunchBall();
+                    }
+                } else if (gameWon) {
+                    if (typeof window.startGame === 'function') {
+                        window.startGame();
+                    }
+                }
+            }
+        } else if (!gameMode && event.type === 'keydown') {
+            // Menu navigation
+            if (event.key === "Enter") {
+                // Handle selection
+                const selectedText = menuItems[currentIndex].textContent.trim();
+                if (links[selectedText]) {
+                    if (selectedText === "Mail") {
+                        window.location.href = links[selectedText];
+                    } else {
+                        window.open(links[selectedText], '_blank');
+                    }
+                } else if (selectedText === "Games") {
+                    startBreakoutGame();
+                } else if (selectedText === "Settings") {
+                    showSettingsMenu();
+                }
+            } else if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
+                // Navigate menu up
+                updateSelection(currentIndex - 1);
+            } else if (event.key === "ArrowDown" || event.key === "ArrowRight") {
+                // Navigate menu down
+                updateSelection(currentIndex + 1);
             }
         }
     }
@@ -1175,7 +1273,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initial state setup
     menuItems[currentIndex].classList.add('active');
-    menuItems[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    menuItems[currentIndex].scrollIntoView({ block: 'nearest' });
     previewImage.src = menuItems[currentIndex].dataset.preview;
     
     // Initial call to draw, which will then self-loop if running/paused
