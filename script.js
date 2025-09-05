@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let inSubMenu = false;
     let inSettingsMenu = false; // Flag specifically for settings menu
     let inThemeMenu = false; // Flag for theme submenu
+    let inGamesMenu = false; // Flag for games submenu
     let gameMode = false; // Flag to indicate if a game is active
     let animationFrameId = null; // To store the requestAnimationFrame ID for the game loop
     
@@ -285,6 +286,12 @@ document.addEventListener('DOMContentLoaded', function() {
             handleThemeMenuAction(action);
             return;
         }
+        
+        // Handle games menu separately
+        if (inGamesMenu) {
+            handleGamesMenuAction(action);
+            return;
+        }
     
         // NEW: Unified handling for 'select' action
         if (action === 'select') {
@@ -301,33 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 } else {
                     if (selectedText === "Games") {
-                        // Create a canvas element without animation
-                        screenEl.innerHTML = `<canvas id="breakout-game" style="background:black; display:block; margin:auto; width:100%; height:100%;"></canvas>`;
-                        
-                        // Initialize game immediately
-                        const screenRect = screenEl.getBoundingClientRect();
-                        initBreakoutGame(screenRect.width, screenRect.height);
-                        
-                        gameMode = true;
-                        inSubMenu = true;
-                        console.log("gameMode set to true.");
-                        
-                        // Initialize Hammer.js for game paddle control
-                        if (!gameHammerManager) {
-                            console.log("Initializing Hammer.js manager for circular pan (game)..");
-                            gameHammerManager = new Hammer.Manager(clickwheel);
-                            gameHammerManager.add(new Hammer.Pan({ threshold: 0 })); 
-                            gameHammerManager.on('panstart', onPanStart);
-                            gameHammerManager.on('panmove', onPanMove);
-                            gameHammerManager.on('panend', onPanEnd);
-                            console.log("Game Hammer.js manager initialized and listeners added.");
-                        } else {
-                            console.log("Game Hammer.js manager already initialized.");
-                        }
-                        // Disable menu Hammer.js when game starts
-                        menuHammerManager.set({ enable: false });
-                        // Enable game Hammer.js
-                        gameHammerManager.set({ enable: true });
+                        showGamesMenu();
                     } else if (selectedText === "Settings") {
                         showSettingsMenu();
                     } else {
@@ -458,6 +439,88 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Function to handle games menu actions
+    function handleGamesMenuAction(action) {
+        const gameItems = document.querySelectorAll('.menu-item[data-game]');
+        let gameIndex = 0;
+        
+        // Find current active game
+        gameItems.forEach((item, index) => {
+            if (item.classList.contains('active')) {
+                gameIndex = index;
+            }
+        });
+        
+        switch(action) {
+            case 'select':
+                const selectedGame = gameItems[gameIndex].dataset.game;
+                if (selectedGame === "breakout") {
+                    // Create a canvas element without animation
+                    screenEl.innerHTML = `<canvas id="breakout-game" style="background:black; display:block; margin:auto; width:100%; height:100%;"></canvas>`;
+                    
+                    // Initialize game immediately
+                    const screenRect = screenEl.getBoundingClientRect();
+                    initBreakoutGame(screenRect.width, screenRect.height);
+                    
+                    gameMode = true;
+                    inSubMenu = true;
+                    inGamesMenu = false;
+                    console.log("gameMode set to true.");
+                    
+                    // Initialize Hammer.js for game paddle control
+                    if (!gameHammerManager) {
+                        console.log("Initializing Hammer.js manager for circular pan (game)..");
+                        gameHammerManager = new Hammer.Manager(clickwheel);
+                        gameHammerManager.add(new Hammer.Pan({ threshold: 0 })); 
+                        gameHammerManager.on('panstart', onPanStart);
+                        gameHammerManager.on('panmove', onPanMove);
+                        gameHammerManager.on('panend', onPanEnd);
+                        console.log("Game Hammer.js manager initialized and listeners added.");
+                    } else {
+                        console.log("Game Hammer.js manager already initialized.");
+                    }
+                    // Disable menu Hammer.js when game starts
+                    menuHammerManager.set({ enable: false });
+                    // Enable game Hammer.js
+                    gameHammerManager.set({ enable: true });
+                }
+                break;
+            case 'menu':
+                restoreMenu();
+                break;
+            case 'forward':
+                // For future use if more games are added
+                if (gameIndex < gameItems.length - 1) {
+                    gameItems[gameIndex].classList.remove('active');
+                    gameIndex++;
+                    gameItems[gameIndex].classList.add('active');
+                    gameItems[gameIndex].scrollIntoView({ block: 'nearest' });
+                    
+                    // Update preview image if available
+                    const previewImage = document.getElementById('preview-image');
+                    if (previewImage && gameItems[gameIndex].dataset.preview) {
+                        previewImage.src = gameItems[gameIndex].dataset.preview;
+                    }
+                }
+                break;
+            case 'back':
+                // For future use if more games are added
+                if (gameIndex > 0) {
+                    gameItems[gameIndex].classList.remove('active');
+                    gameIndex--;
+                    gameItems[gameIndex].classList.add('active');
+                    gameItems[gameIndex].scrollIntoView({ block: 'nearest' });
+                    
+                    // Update preview image if available
+                    const previewImage = document.getElementById('preview-image');
+                    if (previewImage && gameItems[gameIndex].dataset.preview) {
+                        previewImage.src = gameItems[gameIndex].dataset.preview;
+                    }
+                }
+                break;
+        }
+    }
+    
     // Initial state setup
     menuItems[currentIndex].classList.add('active');
     menuItems[currentIndex].scrollIntoView({ block: 'nearest' });
@@ -487,6 +550,7 @@ document.addEventListener('DOMContentLoaded', function() {
         inSubMenu = false;
         inSettingsMenu = false;
         inThemeMenu = false;
+        inGamesMenu = false;
         
         // Store the current preview image path before rebuilding the menu
         const currentPreviewPath = menuItems[currentIndex].dataset.preview;
@@ -527,6 +591,7 @@ document.addEventListener('DOMContentLoaded', function() {
         inSubMenu = true;
         inSettingsMenu = true;
         inThemeMenu = false;
+        inGamesMenu = false;
         
         // Disable main menu Hammer.js and enable settings Hammer.js
         menuHammerManager.set({ enable: false });
@@ -549,6 +614,7 @@ document.addEventListener('DOMContentLoaded', function() {
         inSubMenu = true;
         inSettingsMenu = false;
         inThemeMenu = true;
+        inGamesMenu = false;
         
         // Keep settings Hammer.js enabled for theme navigation
         
@@ -599,6 +665,34 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Store for use in clickwheel navigation
         window.updateThemeSelection = updateThemeSelection;
+    }
+    
+    // Function to show the Games menu without animation
+    function showGamesMenu() {
+        inSubMenu = true;
+        inSettingsMenu = false;
+        inThemeMenu = false;
+        inGamesMenu = true;
+        
+        // Disable main menu Hammer.js
+        menuHammerManager.set({ enable: false });
+        
+        // Define preview image for the game
+        const gamePreview = "images/bricks-breaker-preview.png";
+        
+        screenEl.innerHTML = `
+            <div id="display">
+                <div id="menu-title">Games</div>
+                <div id="menu-container">
+                    <ul id="menu-list">
+                        <li class="menu-item active" data-game="breakout" data-preview="${gamePreview}">Bricks Breaker</li>
+                    </ul>
+                </div>
+            </div>
+            <div id="right-display">
+                <img src="${gamePreview}" alt="Preview" class="display-icon" id="preview-image">
+            </div>
+        `;
     }
     
     // Function to apply the selected theme with animation
@@ -654,69 +748,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to start the Breakout game (initial setup when 'Games' is selected)
     function startBreakoutGame() {
         console.log("Starting Breakout Game...");
-        // Use a Promise to ensure images are loaded before proceeding
-        allGameImagesLoadedPromise = new Promise((resolve) => {
-            let loadedCount = 0;
-            const imagesToLoad = [youWinImage]; 
-    
-            if (imagesToLoad.length === 0) {
-                resolve();
-                return;
-            }
-    
-            imagesToLoad.forEach(img => {
-                if (img.complete && img.naturalWidth !== 0) {
-                    loadedCount++;
-                } else {
-                    img.onload = () => {
-                        loadedCount++;
-                        if (loadedCount === imagesToLoad.length) {
-                            resolve();
-                        }
-                    };
-                    img.onerror = () => {
-                        console.error("Failed to load image:", img.src);
-                        loadedCount++; 
-                        if (loadedCount === imagesToLoad.length) {
-                            resolve();
-                        }
-                    };
-                }
-            });
-    
-            if (loadedCount === imagesToLoad.length) { 
-                resolve();
-            }
-        });
-    
-        allGameImagesLoadedPromise.then(() => {
-            console.log("All game images confirmed loaded. Proceeding with game setup.");
-            
-            screenEl.innerHTML = `
-                <canvas id="breakout-game" style="background:black; display:block; margin:auto; width:100%; height:100%;"></canvas>
-            `;
-            const screenRect = screenEl.getBoundingClientRect();
-            initBreakoutGame(screenRect.width, screenRect.height);
-            gameMode = true; 
-            console.log("gameMode set to true.");
-    
-            // Initialize Hammer.js for game paddle control
-            if (!gameHammerManager) {
-                console.log("Initializing Hammer.js manager for circular pan (game)..");
-                gameHammerManager = new Hammer.Manager(clickwheel);
-                gameHammerManager.add(new Hammer.Pan({ threshold: 0 })); 
-                gameHammerManager.on('panstart', onPanStart);
-                gameHammerManager.on('panmove', onPanMove);
-                gameHammerManager.on('panend', onPanEnd);
-                console.log("Game Hammer.js manager initialized and listeners added.");
-            } else {
-                console.log("Game Hammer.js manager already initialized.");
-            }
-            // Disable menu Hammer.js when game starts
-            menuHammerManager.set({ enable: false });
-            // Enable game Hammer.js
-            gameHammerManager.set({ enable: true });
-        });
+        showGamesMenu();
     }
     
     // Function to exit the game without animation
@@ -775,21 +807,25 @@ document.addEventListener('DOMContentLoaded', function() {
         canvas.height = currentCanvasDisplayHeight * dpr; 
         ctx.scale(dpr, dpr);
     
+        // Game constants
         paddleWidth = canvasDisplayWidth * 0.18; 
         let paddleHeight = currentCanvasDisplayHeight * 0.03; 
         paddleX = (canvasDisplayWidth - paddleWidth) / 2; 
         let ballRadius = canvasDisplayWidth * 0.02; 
         let ballX = paddleX + (paddleWidth / 2); 
         let ballY = currentCanvasDisplayHeight - paddleHeight - ballRadius - 5; 
-        let ballSpeed = canvasDisplayWidth * 0.008; // Increased from 0.005 to 0.008 for faster ball
-        let ballDX = 0; // CHANGED: Start with 0 horizontal velocity for vertical launch
+        let ballSpeed = canvasDisplayWidth * 0.008; 
+        let ballDX = 0;
         let ballDY = -ballSpeed; 
         running = false; 
         paused = true; 
-        ballAttachedToPaddle = true; // FIX: Ensure ball is attached to paddle when game initializes
+        ballAttachedToPaddle = true;
         gameWon = false; 
         winAnimationStartTime = 0;
         gameElementsVisible = true;
+        
+        // Track the last frame time for consistent movement regardless of frame rate
+        let lastFrameTime = 0;
     
         const brickRowCount = 3; 
         const maxBrickColumnCount = 6; 
@@ -917,7 +953,10 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         }
     
+        // Improved collision detection with more precise handling
         function collisionDetection() {
+            if (ballAttachedToPaddle) return; // Skip collision detection if ball is attached
+            
             // Calculate the next position of the ball
             const nextBallX = ballX + ballDX;
             const nextBallY = ballY + ballDY;
@@ -930,9 +969,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 for (let c = 0; c < bricks[r].length && !collisionHappened; c++) { 
                     let b = bricks[r][c];
                     if (b.status === 1) { 
-                        // Expanded collision box to catch fast-moving balls
-                        // Check if the ball's path intersects with the brick
-                        
                         // Calculate the closest point on the brick to the ball's current position
                         const closestX = Math.max(b.x, Math.min(ballX, b.x + b.width));
                         const closestY = Math.max(b.y, Math.min(ballY, b.y + b.height));
@@ -949,7 +985,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             collisionHappened = true;
                             
                             // Determine which side of the brick was hit
-                            // This helps with proper bounce direction
                             const fromLeft = ballX < b.x;
                             const fromRight = ballX > b.x + b.width;
                             const fromTop = ballY < b.y;
@@ -1010,15 +1045,94 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     
-        function draw() {
+        function updateGameState(deltaTime) {
+            // Skip state updates if game is paused or won
+            if (paused || gameWon) return;
+            
+            // Calculate movement based on time passed
+            const timeScale = deltaTime / (1000 / 60); // Normalize to 60fps
+            
+            // Update ball position if not attached to paddle
+            if (!ballAttachedToPaddle) {
+                // Move ball with time-based movement
+                ballX += ballDX * timeScale;
+                ballY += ballDY * timeScale;
+                
+                // Wall collisions
+                if (ballX - ballRadius < 0) {
+                    ballX = ballRadius; // Prevent ball from going into the wall
+                    ballDX = -ballDX;
+                } else if (ballX + ballRadius > canvasDisplayWidth) {
+                    ballX = canvasDisplayWidth - ballRadius; // Prevent ball from going into the wall
+                    ballDX = -ballDX;
+                }
+                
+                if (ballY - ballRadius < 0) {
+                    ballY = ballRadius; // Prevent ball from going into the ceiling
+                    ballDY = -ballDY;
+                }
+                
+                // Paddle collision - improved with early detection and better bounce physics
+                if (ballY + ballRadius >= currentCanvasDisplayHeight - paddleHeight - 2 && 
+                    ballY + ballRadius <= currentCanvasDisplayHeight - paddleHeight + 2 && 
+                    ballX >= paddleX && 
+                    ballX <= paddleX + paddleWidth) {
+                    
+                    // Calculate bounce angle based on where the ball hit the paddle
+                    let hitPoint = (ballX - paddleX) / paddleWidth; // 0 to 1
+                    
+                    // More dynamic angle calculation - hit closer to edge = sharper angle
+                    let angle = (hitPoint - 0.5) * Math.PI * 0.7; // -35 to +35 degrees in radians
+                    
+                    // Set new direction based on angle, maintaining constant speed
+                    ballDX = ballSpeed * Math.sin(angle);
+                    ballDY = -ballSpeed * Math.cos(angle); // Negative because we want to go up
+                    
+                    // Ensure the ball is above the paddle to prevent multiple collisions
+                    ballY = currentCanvasDisplayHeight - paddleHeight - ballRadius - 2;
+                }
+                
+                // Ball falls off the bottom
+                if (ballY + ballRadius > currentCanvasDisplayHeight) {
+                    ballAttachedToPaddle = true;
+                    running = false;
+                    paused = true;
+                    ballDX = 0;
+                    ballDY = -ballSpeed;
+                }
+                
+                // Check for brick collisions
+                collisionDetection();
+            }
+            // We removed the else clause here since we're handling attached ball in the draw function
+        }
+    
+        function draw(timestamp) {
+            // Calculate delta time for smooth animation
+            if (!lastFrameTime) lastFrameTime = timestamp;
+            const deltaTime = timestamp - lastFrameTime;
+            lastFrameTime = timestamp;
+            
+            // Clear canvas with gradient background
             const gradient = ctx.createLinearGradient(0, 0, 0, currentCanvasDisplayHeight);
-            gradient.addColorStop(0, '#e1e1e1'); // Lighter blue at the top
-            gradient.addColorStop(1, '#c7c7c7'); // Light blue at the bottom
+            gradient.addColorStop(0, '#e1e1e1'); // Lighter gray at the top
+            gradient.addColorStop(1, '#c7c7c7'); // Light gray at the bottom
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvasDisplayWidth, currentCanvasDisplayHeight); 
     
             // Update paddle position based on key states
             updatePaddlePosition();
+            
+            // IMPORTANT: Always update ball position if attached to paddle
+            if (ballAttachedToPaddle) {
+                ballX = paddleX + (paddleWidth / 2);
+                ballY = currentCanvasDisplayHeight - paddleHeight - ballRadius - 5;
+            }
+            
+            // Update game state
+            if (!gameWon) {
+                updateGameState(deltaTime);
+            }
     
             if (gameWon) {
                 // Calculate animation progress
@@ -1062,56 +1176,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             } else {
+                // Draw game elements
                 drawBricks();
                 drawPaddle();
                 drawBall();
-    
-                if (ballAttachedToPaddle) {
-                    ballX = paddleX + (paddleWidth / 2);
-                    ballY = currentCanvasDisplayHeight - paddleHeight - ballRadius - 5; 
-                } else { 
-                    ballX += ballDX; 
-                    ballY += ballDY;
-                }
-    
-                if (ballX + ballRadius > canvasDisplayWidth || ballX - ballRadius < 0) {
-                    ballDX = -ballDX;
-                    // Normalize velocity to maintain constant speed
-                    const normalized = normalizeVelocity(ballDX, ballDY, ballSpeed);
-                    ballDX = normalized.dx;
-                    ballDY = normalized.dy;
-                }
-                if (ballY - ballRadius < 0) {
-                    ballDY = -ballDY;
-                    // Normalize velocity to maintain constant speed
-                    const normalized = normalizeVelocity(ballDX, ballDY, ballSpeed);
-                    ballDX = normalized.dx;
-                    ballDY = normalized.dy;
-                }
-    
-                if (ballY + ballRadius >= currentCanvasDisplayHeight - paddleHeight - 2 && 
-                    ballX > paddleX && ballX < paddleX + paddleWidth) { 
-                    // CHANGED: Modified paddle bounce to maintain constant speed
-                    ballDY = -ballDY; // Reverse vertical direction
-                    
-                    // Calculate angle based on where the ball hit the paddle
-                    let hitPoint = (ballX - paddleX) / paddleWidth; // 0 to 1
-                    let angle = (hitPoint - 0.5) * Math.PI * 0.7; // -35 to +35 degrees in radians
-                    
-                    // Set new direction based on angle, but maintain constant speed
-                    ballDX = ballSpeed * Math.sin(angle);
-                    ballDY = -ballSpeed * Math.cos(angle); // Negative because we want to go up
-                }
-    
-                if (ballY + ballRadius > currentCanvasDisplayHeight) {
-                    ballAttachedToPaddle = true; 
-                    running = false; 
-                    paused = true; 
-                    ballDX = 0; // CHANGED: Reset to vertical direction
-                    ballDY = -ballSpeed; 
-                }
-    
-                collisionDetection(); 
             }
             
             animationFrameId = requestAnimationFrame(draw); 
@@ -1124,12 +1192,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 paddleX = (canvasDisplayWidth - paddleWidth) / 2; 
                 ballX = paddleX + (paddleWidth / 2); 
                 ballY = currentCanvasDisplayHeight - paddleHeight - ballRadius - 5; 
-                ballDX = 0; // CHANGED: Start with vertical direction
+                ballDX = 0;
                 ballDY = -ballSpeed;
                 running = false; 
                 paused = true; 
                 gameWon = false; 
                 gameElementsVisible = true;
+                lastFrameTime = 0;
                 
                 if (!animationFrameId) {
                     animationFrameId = requestAnimationFrame(draw);
@@ -1149,7 +1218,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 running = true; 
                 paused = false; 
                 
-                // CHANGED: Always launch ball straight up
+                // Always launch ball straight up initially
                 ballDX = 0;
                 ballDY = -ballSpeed;
     
@@ -1283,4 +1352,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     animationFrameId = requestAnimationFrame(draw); 
-    });
+   });

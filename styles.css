@@ -90,10 +90,10 @@ html, body {
    flex-direction: row;
    box-sizing: border-box;
    border-radius: calc(1 * var(--mm-to-px));
-   border-top: calc(0.7 * var(--mm-to-px)) solid #333333;
-   border-bottom: calc(0.7 * var(--mm-to-px)) solid #333333;
-   border-left: calc(1.5 * var(--mm-to-px)) solid #333333;
-   border-right: calc(1.5 * var(--mm-to-px)) solid #333333;
+   border-top: calc(0.7 * var(--mm-to-px)) solid #000000;
+   border-bottom: calc(0.7 * var(--mm-to-px)) solid #000000;
+   border-left: calc(1.5 * var(--mm-to-px)) solid #000000;
+   border-right: calc(1.5 * var(--mm-to-px)) solid #000000;
    box-shadow: 
        inset 0 0 calc(2 * var(--mm-to-px)) rgba(0,0,0,0.2),
        0 0 calc(1 * var(--mm-to-px)) rgba(255,255,255,0.5);
@@ -301,7 +301,7 @@ html, body {
   }
   
   body.theme-dark .screen {
-   border-color: #555555;
+   border-color: #000000;
   }
   
   body.theme-dark .clickwheel {
@@ -340,7 +340,7 @@ html, body {
    }
    
    body.theme-mint .screen {
-   border-color: #555555;
+   border-color: #000000;
    }
    
    /* Clickwheel remains white like in light theme */
