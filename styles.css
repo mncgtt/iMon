@@ -7,19 +7,22 @@ html, body {
    width: 100%;
   }
   
-/* Background color for both desktop and mobile */
+/* Background image, NO overlay */
 body {
-  background-color: #f0f0f0; /* Change this to your preferred color */
+  background: url('images/background.jpg') no-repeat center center fixed;
+  background-size: cover;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* Mobile-specific adjustments (if needed) */
+/* Mobile-specific background and positioning */
 @media only screen and (max-width: 768px) {
   body {
-    background-color: #f0f0f0; /* Same color, or choose a different one for mobile */
+    background: url('images/mobile-background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    /* Keep centered horizontally, but adjust vertical position */
     align-items: center;
   }
 }
