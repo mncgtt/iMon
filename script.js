@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const links = {
         "LinkedIn": "https://www.linkedin.com/in/monicagottardi",
         "Behance": "https://www.behance.net/monicagottardi",
+        "CV": "https://drive.google.com/drive/folders/1Lljhj2zPl8zjRdFb4QppszHeY8YD7SCH?usp=drive_link",
         "Mail": "mailto:monicagottardi@outlook.com"
     };
     
