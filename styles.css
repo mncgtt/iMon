@@ -9,7 +9,7 @@ html, body {
   
 body {
   /* MODIFIED: Solid color background instead of image */
-  background: #f0f0f0; 
+  background: #1F1F1F; 
   /* Also ensure fixed positioning/size properties are removed/simplified for color */
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -33,7 +33,7 @@ body {
    
    .ipod-wrapper {
       /* Add a small margin to push it down slightly from center */
-      margin-top: 0;
+      margin-top: 15vh;
    }
   }
   
