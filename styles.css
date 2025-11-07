@@ -5,7 +5,7 @@ html, body {
    padding: 0;
    height: 100%;
    width: 100%;
-   background: 3D72EA;
+   background: #3D72EA;
   }
   
 /* Background image, NO overlay */
@@ -24,17 +24,11 @@ body {
   body {
     align-items: center;
   }
-  body::before {
-      background-size: cover; 
-      background-position: center center;
-  }
-  /* Disabilita ::after su mobile */
-  body::after {
-      background: none; 
-  }
+   
   .ipod-wrapper {
     margin-top: 15vh;
   }
+   
   /* Rimuovi il backdrop-filter su mobile se crea problemi */
   .ipod-container {
       backdrop-filter: none;
