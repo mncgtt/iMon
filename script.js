@@ -1353,4 +1353,36 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     animationFrameId = requestAnimationFrame(draw); 
-   });
+   }
+
+// --- EFFETTO GRADIENTE CHE SEGUE IL MOUSE ---
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Scegli la sensibilità: 0.1 è evidente, ma puoi regolarlo.
+    const sensitivity = 0.1; 
+    const root = document.documentElement; // Seleziona l'elemento :root per aggiornare le variabili
+
+    function handleMouseMovement(e) {
+        // Calcola la posizione del mouse rispetto al centro
+        const offsetX = e.clientX - (window.innerWidth / 2);
+        const offsetY = e.clientY - (window.innerHeight / 2);
+
+        // Calcola il movimento Parallax (Inverso)
+        // Usiamo un movimento INVERSO affinché l'iPod sembri muoversi in 3D
+        const moveX = offsetX * sensitivity; 
+        const moveY = offsetY * sensitivity;
+
+        // Aggiorna le variabili CSS solo su desktop
+        if (window.innerWidth > 768) {
+            root.style.setProperty('--mouse-x', `${moveX}px`);
+            root.style.setProperty('--mouse-y', `${moveY}px`);
+        } else {
+            // Su mobile le variabili rimangono a 0
+            root.style.setProperty('--mouse-x', `0px`);
+            root.style.setProperty('--mouse-y', `0px`);
+        }
+    }
+
+    // Collega la funzione all'evento di movimento del mouse
+    document.addEventListener('mousemove', handleMouseMovement);
+});
