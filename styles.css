@@ -7,20 +7,24 @@ html, body {
    width: 100%;
   }
   
-/* Background image, NO overlay */
 body {
-  background: url('images/background.jpg') no-repeat center center fixed;
+  /* MODIFIED: Solid color background instead of image */
+  background: #f0f0f0; 
+  /* Also ensure fixed positioning/size properties are removed/simplified for color */
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   background-size: cover;
+  /* Retain font and centering for other properties */
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* Mobile-specific background and positioning */
 @media only screen and (max-width: 768px) {
   body {
-    background: url('images/mobile-background.jpg') no-repeat center center fixed;
+    /* MODIFIED: Inheriting solid color background from desktop body. Removed mobile-specific image. */
+    background: inherit;
     background-size: cover;
     /* Keep centered horizontally, but adjust vertical position */
     align-items: center;
