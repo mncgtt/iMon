@@ -1355,27 +1355,21 @@ document.addEventListener('DOMContentLoaded', function() {
     animationFrameId = requestAnimationFrame(draw); 
    }
 
-// --- EFFETTO GRADIENTE CHE SEGUE IL MOUSE ---
+// --- EFFETTO PALLA SFOCATA CHE SEGUE IL MOUSE ---
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Scegli la sensibilità: 0.1 è evidente, ma puoi regolarlo.
-    const sensitivity = 1.0; 
-    const root = document.documentElement; // Seleziona l'elemento :root per aggiornare le variabili
+    // La sensibilità è ora per il posizionamento diretto del gradiente radiale
+    const root = document.documentElement; // Seleziona l'elemento :root
 
     function handleMouseMovement(e) {
-        // Calcola la posizione del mouse rispetto al centro
-        const offsetX = e.clientX - (window.innerWidth / 2);
-        const offsetY = e.clientY - (window.innerHeight / 2);
+        // La posizione del mouse è usata direttamente come centro del gradiente radiale
+        const mouseX = e.clientX; 
+        const mouseY = e.clientY;
 
-        // Calcola il movimento Parallax (Inverso)
-        // Usiamo un movimento INVERSO affinché l'iPod sembri muoversi in 3D
-        const moveX = offsetX * sensitivity; 
-        const moveY = offsetY * sensitivity;
-
-        // Aggiorna le variabili CSS solo su desktop
+        // Aggiorna le variabili CSS
         if (window.innerWidth > 768) {
-            root.style.setProperty('--mouse-x', `${moveX}px`);
-            root.style.setProperty('--mouse-y', `${moveY}px`);
+            root.style.setProperty('--mouse-x', `${mouseX}px`);
+            root.style.setProperty('--mouse-y', `${mouseY}px`);
         } else {
             // Su mobile le variabili rimangono a 0
             root.style.setProperty('--mouse-x', `0px`);
