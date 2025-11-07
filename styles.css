@@ -404,6 +404,7 @@ body {
   .fade-in, .fade-out, .slide-in-right, .slide-in-left, .slide-out-right, .slide-out-left {
   animation: none;
   }
+
 /* Stile e Posizionamento del Testo di Sfondo */
 #background-text {
     position: absolute; /* Riferito al <body> */
@@ -416,12 +417,12 @@ body {
 }
 
 #background-text h1 {
-    font-size: 3em;
+    font-size: 1em;
     margin-bottom: 5px;
 }
 
 #background-text p {
-    font-size: 1.2em;
+    font-size: 1em;
     margin: 0;
 }
 
