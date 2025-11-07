@@ -41,6 +41,7 @@ body::before {
     
     /* La posizione del gradiente è controllata dalle variabili del mouse */
     background-position: calc(50% + var(--mouse-x)) calc(50% + var(--mouse-y));
+   transition: background-position 0.1s ease-out; /* Rende il movimento più fluido */
 }
 
 @media only screen and (max-width: 768px) {
