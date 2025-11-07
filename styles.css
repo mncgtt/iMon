@@ -418,12 +418,12 @@ body {
 }
 
 #background-text h1 {
-    font-size: 1em;
+    font-size: 0.6em;
     margin-bottom: 5px;
 }
 
 #background-text p {
-    font-size: 1em;
+    font-size: 0.6em;
     margin: 0;
 }
 
