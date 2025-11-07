@@ -1353,30 +1353,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     animationFrameId = requestAnimationFrame(draw); 
-   }
-
-// --- EFFETTO PALLA SFOCATA CHE SEGUE IL MOUSE ---
-
-document.addEventListener('DOMContentLoaded', function() {
-    // La sensibilità è ora per il posizionamento diretto del gradiente radiale
-    const root = document.documentElement; // Seleziona l'elemento :root
-
-    function handleMouseMovement(e) {
-        // La posizione del mouse è usata direttamente come centro del gradiente radiale
-        const mouseX = e.clientX; 
-        const mouseY = e.clientY;
-
-        // Aggiorna le variabili CSS
-        if (window.innerWidth > 768) {
-            root.style.setProperty('--mouse-x', `${mouseX}px`);
-            root.style.setProperty('--mouse-y', `${mouseY}px`);
-        } else {
-            // Su mobile le variabili rimangono a 0
-            root.style.setProperty('--mouse-x', `0px`);
-            root.style.setProperty('--mouse-y', `0px`);
-        }
-    }
-
-    // Collega la funzione all'evento di movimento del mouse
-    document.addEventListener('mousemove', handleMouseMovement);
 });
