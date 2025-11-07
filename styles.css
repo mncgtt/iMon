@@ -404,3 +404,38 @@ body {
   .fade-in, .fade-out, .slide-in-right, .slide-in-left, .slide-out-right, .slide-out-left {
   animation: none;
   }
+/* Stile e Posizionamento del Testo di Sfondo */
+#background-text {
+    position: absolute; /* Riferito al <body> */
+    top: 50px; /* Margine dall'alto */
+    left: 50px; /* Margine da sinistra */
+    z-index: 1; /* Assicura che sia sopra lo sfondo ma sotto l'iPod (che ha z-index più alto) */
+    color: #333; /* Colore del testo */
+    font-family: 'Inter', sans-serif;
+    opacity: 0.6; /* Semitrasparente per non distrarre */
+}
+
+#background-text h1 {
+    font-size: 3em;
+    margin-bottom: 5px;
+}
+
+#background-text p {
+    font-size: 1.2em;
+    margin: 0;
+}
+
+/* Regola per evitare che il testo sia troppo grande sui dispositivi mobili */
+@media (max-width: 768px) {
+    #background-text {
+        top: 20px;
+        left: 20px;
+        opacity: 0.8;
+    }
+    #background-text h1 {
+        font-size: 2em;
+    }
+    #background-text p {
+        font-size: 1em;
+    }
+}
