@@ -10,7 +10,7 @@ html, body {
 /* Background image, NO overlay */
 body {
   /* MODIFIED: Solid color background instead of image */
-  background: #f0f0f0; 
+  background: #000000; 
   /* Also ensure fixed positioning/size properties are removed/simplified for color */
   background-repeat: no-repeat;
   background-attachment: fixed;
