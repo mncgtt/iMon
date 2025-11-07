@@ -410,7 +410,7 @@ body {
 #background-text {
     position: absolute; /* Riferito al <body> */
     top: 120px; /* Margine dall'alto */
-    left: 250px; /* Margine da sinistra */
+    left: 200px; /* Margine da sinistra */
     z-index: 1; /* Assicura che sia sopra lo sfondo ma sotto l'iPod (che ha z-index più alto) */
     color: #ffffff; /* Colore del testo */
     font-family: 'Space Mono', monospace;
@@ -418,12 +418,12 @@ body {
 }
 
 #background-text h1 {
-    font-size: 1em;
+    font-size: 0.8em;
     margin-bottom: 5px;
 }
 
 #background-text p {
-    font-size: 1em;
+    font-size: 0.8em;
     margin: 0;
 }
 
