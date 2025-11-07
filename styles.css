@@ -29,35 +29,51 @@ body {
 body::before {
     content: '';
     position: absolute;
-    top: -50px; 
-    left: -50px;
-    right: -50px;
-    bottom: -50px;
-    z-index: -1; 
+    top: 0; left: 0; right: 0; bottom: 0; /* Copre tutto lo schermo */
+    z-index: -2; /* Metti sotto ::after e iPod */
     
-    /* Gradiente molto grande e vibrante */
+    /* Gradiente principale (fisso o con un leggero movimento generale se vuoi) */
     background: linear-gradient(-45deg, #4DB8FF, #BE4DBF, #FF6B6B); 
-    background-size: 300% 300%; /* TRE VOLTE più grande per movimento evidente */
+    background-size: cover; /* Si adatta allo schermo */
+    background-position: center center;
+}
+
+body::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: -1; /* Sopra ::before, ma sotto l'iPod */
     
-    /* La posizione del gradiente è controllata dalle variabili del mouse */
-    background-position: calc(50% + var(--mouse-x)) calc(50% + var(--mouse-y));
-   transition: background-position 0.1s ease-out; /* Rende il movimento più fluido */
+    /* Gradiente radiale che seguirà il mouse */
+    background: radial-gradient(
+        circle 200px at var(--mouse-x) var(--mouse-y), /* La "palla" */
+        rgba(255, 255, 255, 0.4) 0%, /* Centro luminoso e sfocato */
+        rgba(255, 255, 255, 0) 70% /* Dissolvenza */
+    );
+    /* Transizione per un movimento più fluido della palla */
+    transition: background 0.1s ease-out; 
+    will-change: background;
 }
 
 @media only screen and (max-width: 768px) {
   body {
-    /* Manteniamo la centratura qui */
     align-items: center;
   }
-  /* Modifica l'elemento pseudo::before per mobile */
   body::before {
-      /* Rimuovi la dimensione extra e le variabili su mobile */
       background-size: cover; 
       background-position: center center;
   }
-  /* Reintroduce top margin for mobile screens to push iPod down */
+  /* Disabilita ::after su mobile */
+  body::after {
+      background: none; 
+  }
   .ipod-wrapper {
     margin-top: 15vh;
+  }
+  /* Rimuovi il backdrop-filter su mobile se crea problemi */
+  .ipod-container {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
   }
 }
    
@@ -117,6 +133,12 @@ body::before {
    overflow: hidden;
    animation: ipodZoomIn 0.8s ease-out forwards; /* Added animation */
    transition: background 0.5s ease;
+   /* Filtro di sfocatura dietro l'iPod, reagisce allo sfondo mosso */
+    backdrop-filter: blur(15px) saturate(1.5); /* Puoi regolare i valori */
+    -webkit-backdrop-filter: blur(15px) saturate(1.5); /* Per Safari */
+    
+    /* Assicurati che l'iPod sia sopra gli pseudo-elementi */
+    z-index: 10;
   }
   
   .ipod-container::before {
