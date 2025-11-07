@@ -559,7 +559,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Create menu HTML without animation class
         const menuHTML = `
             <div id="display">
-                <div id="menu-title">iPod</div>
+                <div id="menu-title">iMon</div>
                 <div id="menu-container">
                     <ul id="menu-list">
                         <li class="menu-item ${currentIndex === 0 ? 'active' : ''}" data-preview="images/linkedin-preview.png">LinkedIn</li>
