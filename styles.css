@@ -7,9 +7,10 @@ html, body {
    width: 100%;
   }
   
+/* Background image, NO overlay */
 body {
   /* MODIFIED: Solid color background instead of image */
-  background: #1F1F1F; 
+  background: #f0f0f0; 
   /* Also ensure fixed positioning/size properties are removed/simplified for color */
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -21,6 +22,7 @@ body {
   align-items: center;
 }
 
+/* Mobile-specific background and positioning */
 @media only screen and (max-width: 768px) {
   body {
     /* MODIFIED: Inheriting solid color background from desktop body. Removed mobile-specific image. */
@@ -29,13 +31,16 @@ body {
     /* Keep centered horizontally, but adjust vertical position */
     align-items: center;
   }
+  /* Reintroduce top margin for mobile screens to push iPod down */
+  .ipod-wrapper {
+    margin-top: 15vh;
+  }
 }
    
    .ipod-wrapper {
-      /* Add a small margin to push it down slightly from center */
-      margin-top: 15vh;
+      /* Removed margin-top for perfect vertical centering on desktop */
+      margin-top: 0;
    }
-  }
   
   /* ipod-wrapper is just a flex container */
   .ipod-wrapper {
