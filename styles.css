@@ -6,30 +6,53 @@ html, body {
    height: 100%;
    width: 100%;
   }
+
+/* Definisci le variabili CSS che verranno aggiornate dal JavaScript */
+:root {
+    --mouse-x: 0px;
+    --mouse-y: 0px;
+}
   
 /* Background image, NO overlay */
 body {
-  /* MODIFIED: Solid color background instead of image */
-  background: #000000; 
-  /* Also ensure fixed positioning/size properties are removed/simplified for color */
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  background-size: cover;
-  /* Retain font and centering for other properties */
+  /* RIPRISTINATO: Sfondo solido e neutro per il contenitore */
+  background: #f0f0f0; 
+  /* Rimuovi background-repeat/attachment/size da qui */
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative; /* Necessario per posizionare ::before */
 }
 
-/* Mobile-specific background and positioning */
+/* **NUOVA REGOLA: ELEMENTO DELLO SFONDO ANIMATO** */
+body::before {
+    content: '';
+    position: absolute;
+    top: -50px; 
+    left: -50px;
+    right: -50px;
+    bottom: -50px;
+    z-index: -1; 
+    
+    /* Gradiente molto grande e vibrante */
+    background: linear-gradient(-45deg, #4DB8FF, #BE4DBF, #FF6B6B); 
+    background-size: 300% 300%; /* TRE VOLTE più grande per movimento evidente */
+    
+    /* La posizione del gradiente è controllata dalle variabili del mouse */
+    background-position: calc(50% + var(--mouse-x)) calc(50% + var(--mouse-y));
+}
+
 @media only screen and (max-width: 768px) {
   body {
-    /* MODIFIED: Inheriting solid color background from desktop body. Removed mobile-specific image. */
-    background: inherit;
-    background-size: cover;
-    /* Keep centered horizontally, but adjust vertical position */
+    /* Manteniamo la centratura qui */
     align-items: center;
+  }
+  /* Modifica l'elemento pseudo::before per mobile */
+  body::before {
+      /* Rimuovi la dimensione extra e le variabili su mobile */
+      background-size: cover; 
+      background-position: center center;
   }
   /* Reintroduce top margin for mobile screens to push iPod down */
   .ipod-wrapper {
