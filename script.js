@@ -1359,7 +1359,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 document.addEventListener('DOMContentLoaded', function() {
     // Scegli la sensibilità: 0.1 è evidente, ma puoi regolarlo.
-    const sensitivity = 0.5; 
+    const sensitivity = 1.0; 
     const root = document.documentElement; // Seleziona l'elemento :root per aggiornare le variabili
 
     function handleMouseMovement(e) {
