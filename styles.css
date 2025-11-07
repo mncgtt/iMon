@@ -412,7 +412,7 @@ body {
     left: 400px; /* Margine da sinistra */
     z-index: 1; /* Assicura che sia sopra lo sfondo ma sotto l'iPod (che ha z-index più alto) */
     color: #ffffff; /* Colore del testo */
-    font-family: 'Space mono', monospace;
+    font-family: 'Space Mono', monospace;
     opacity: 1; /* Semitrasparente per non distrarre */
 }
 
