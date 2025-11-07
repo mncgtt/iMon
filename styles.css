@@ -35,11 +35,6 @@ body {
       -webkit-backdrop-filter: none;
   }
 }
-   
-   .ipod-wrapper {
-      /* Removed margin-top for perfect vertical centering on desktop */
-      margin-top: 0;
-   }
   
   /* ipod-wrapper is just a flex container */
   .ipod-wrapper {
