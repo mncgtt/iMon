@@ -409,8 +409,8 @@ body {
 /* Stile e Posizionamento del Testo di Sfondo */
 #background-text {
     position: absolute; /* Riferito al <body> */
-    top: 200px; /* Margine dall'alto */
-    left: 350px; /* Margine da sinistra */
+    top: 150px; /* Margine dall'alto */
+    left: 300px; /* Margine da sinistra */
     z-index: 1; /* Assicura che sia sopra lo sfondo ma sotto l'iPod (che ha z-index più alto) */
     color: #ffffff; /* Colore del testo */
     font-family: 'Space Mono', monospace;
