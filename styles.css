@@ -403,7 +403,6 @@ body {
     z-index: 1; /* Assicura che sia sopra lo sfondo ma sotto l'iPod (che ha z-index più alto) */
     color: #ffffff; /* Colore del testo */
     font-family: 'Doto', monospace;
-    font-weight: 400;
     opacity: 1;
 }
 
