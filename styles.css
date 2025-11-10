@@ -402,8 +402,9 @@ body {
     left: 200px; /* Margine da sinistra */
     z-index: 1; /* Assicura che sia sopra lo sfondo ma sotto l'iPod (che ha z-index più alto) */
     color: #ffffff; /* Colore del testo */
-    font-family: 'VT323', monospace;
-    opacity: 1; /* Semitrasparente per non distrarre */
+    font-family: 'Doto', monospace;
+    font-weight: 400;
+    opacity: 1;
 }
 
 #background-text h1 {
@@ -421,12 +422,12 @@ body {
     #background-text {
         top: 20px;
         left: 20px;
-        opacity: 0.8;
+        opacity: 1;
     }
     #background-text h1 {
-        font-size: 1em;
+        font-size: 0.8em;
     }
     #background-text p {
-        font-size: 1em;
+        font-size: 0.8em;
     }
 }
