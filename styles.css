@@ -419,7 +419,7 @@ body {
 /* Regola per evitare che il testo sia troppo grande sui dispositivi mobili */
 @media (max-width: 768px) {
     #background-text {
-        top: 20px;
+        top: 15px;
         left: 20px;
         opacity: 1;
     }
