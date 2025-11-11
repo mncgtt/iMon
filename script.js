@@ -12,9 +12,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let gameMode = false; // Flag to indicate if a game is active
     let animationFrameId = null; // To store the requestAnimationFrame ID for the game loop
     
-    // --- START OF FIX: New variable to store the last selected main menu item ---
+    // --- FIX START: New variable to store the last selected main menu item ---
     let lastMainMenuIndex = 0; 
-    // --- END OF FIX ---
+    // --- FIX END ---
     
     // Hammer.js instances
     let menuHammerManager = null; // For main menu navigation
@@ -92,10 +92,11 @@ document.addEventListener('DOMContentLoaded', function() {
         menuItems[targetIndex].scrollIntoView({ block: 'nearest' });
         
         // Update the preview image if on the main menu
-        if (!inSubMenu && !gameMode) {
+        if (!inSubMenu && !gameMode && !inSettingsMenu && !inThemeMenu) {
             previewImage.src = menuItems[targetIndex].dataset.preview;
         }
         
+        // IMPORTANT: Update the global index tracker
         currentIndex = targetIndex;
     }
     
@@ -131,9 +132,9 @@ document.addEventListener('DOMContentLoaded', function() {
             menuHammerManager.add(new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 5 }));
             
             menuHammerManager.on('panstart', function(ev) {
-                if (!gameMode && !inSettingsMenu) {
+                if (!gameMode && !inSettingsMenu && !inThemeMenu) {
                     lastMenuAngle = getAngle(clickwheel, ev.center.x, ev.center.y);
-                } else if (inSettingsMenu) {
+                } else if (inSettingsMenu || inThemeMenu) {
                     lastSettingsAngle = getAngle(clickwheel, ev.center.x, ev.center.y);
                 } else if (gameMode) {
                     // For game mode, we need to track the initial paddle position and angle
@@ -156,9 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
     
                     // Map angle difference (e.g., -90 to +90 degrees) to paddle movement
-                    // A full 360 rotation could correspond to a full paddle travel (0 to canvasWidth)
-                    // Let's use a scale factor to make it feel responsive
-                    const paddleMovementFactor = 1.5; // Adjust this for sensitivity
+                    const paddleMovementFactor = 1.5; 
                     const newPaddleX = initialPaddleX + (angleDiff * paddleMovementFactor);
     
                     // Apply movement, constrained by canvas boundaries
@@ -166,12 +165,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         paddleX = Math.max(0, Math.min(newPaddleX, gameCanvas.width - paddleWidth));
                     }
     
-                } else if (!inSubMenu && !inSettingsMenu) {
+                } else if (!inSettingsMenu && !inThemeMenu) {
                     // Main menu navigation
+                    menuItems = getMenuItems(); // Ensure list is fresh
                     const currentAngle = getAngle(clickwheel, ev.center.x, ev.center.y);
                     let angleDiff = currentAngle - lastMenuAngle;
                     
-                    if (Math.abs(angleDiff) >= 360 / menuItems.length) { 
+                    if (menuItems.length > 0 && Math.abs(angleDiff) >= 360 / (menuItems.length * 4)) { // Adjust sensitivity
                         if (angleDiff > 0) {
                             updateSelection(currentIndex + 1);
                         } else {
@@ -180,19 +180,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         lastMenuAngle = currentAngle;
                     }
     
-                } else if (inSettingsMenu) {
-                    // Settings menu navigation
+                } else if (inSettingsMenu || inThemeMenu) {
+                    // Settings or Theme menu navigation
                     const currentAngle = getAngle(clickwheel, ev.center.x, ev.center.y);
                     let angleDiff = currentAngle - lastSettingsAngle;
     
-                    // Check if the difference crosses the threshold for a new item
-                    const settingsMenuItems = document.querySelectorAll('#settings-menu .menu-item');
-                    if (Math.abs(angleDiff) >= 360 / settingsMenuItems.length) { 
-                        const settingsCurrentIndex = Array.from(settingsMenuItems).findIndex(item => item.classList.contains('active'));
+                    const subMenuItems = getMenuItems(); // Get current submenu items
+                    if (subMenuItems.length > 0 && Math.abs(angleDiff) >= 360 / (subMenuItems.length * 4)) { 
                         if (angleDiff > 0) {
-                            updateSettingsSelection(settingsCurrentIndex + 1);
+                            updateSelection(currentIndex + 1);
                         } else {
-                            updateSettingsSelection(settingsCurrentIndex - 1);
+                            updateSelection(currentIndex - 1);
                         }
                         lastSettingsAngle = currentAngle;
                     }
@@ -207,13 +205,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // --- THEME & SETTINGS FUNCTIONS (PLACEHOLDER) ---
+    // --- THEME & SETTINGS FUNCTIONS ---
     
     function showSettingsMenu() {
         inSettingsMenu = true;
+        inSubMenu = true; // Use a general flag if needed elsewhere
         screenEl.classList.add('in-settings');
         // Hide main menu, show settings menu
-        document.getElementById('main-menu').style.display = 'none';
+        document.getElementById('right-display').style.display = 'none'; // Hide preview image
         
         let settingsHtml = `
             <div class="header">Settings</div>
@@ -226,29 +225,13 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('display').innerHTML = settingsHtml;
         menuItems = document.querySelectorAll('#settings-menu .menu-item');
         currentIndex = 0; // Reset index for the new menu
-        updateSettingsSelection(currentIndex); // Initial selection
-    }
-    
-    function updateSettingsSelection(newIndex) {
-        const settingsItems = document.querySelectorAll('#settings-menu .menu-item');
-        if (settingsItems.length === 0) return;
-        
-        let targetIndex = newIndex;
-        if (targetIndex < 0) {
-            targetIndex = settingsItems.length - 1;
-        } else if (targetIndex >= settingsItems.length) {
-            targetIndex = 0;
-        }
-        
-        settingsItems.forEach(item => item.classList.remove('active'));
-        settingsItems[targetIndex].classList.add('active');
-        settingsItems[targetIndex].scrollIntoView({ block: 'nearest' });
-        currentIndex = targetIndex;
+        updateSelection(currentIndex); // Initial selection
     }
     
     function showThemeMenu() {
         inThemeMenu = true;
-        inSettingsMenu = false; // Exit settings view
+        inSettingsMenu = false; // We are in theme, not settings menu
+        
         // Show theme menu
         let themeHtml = `
             <div class="header">Theme</div>
@@ -261,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('display').innerHTML = themeHtml;
         menuItems = document.querySelectorAll('#theme-menu .menu-item');
         currentIndex = 0;
-        updateSelection(currentIndex); // Use regular updateSelection for themes too
+        updateSelection(currentIndex); 
     }
     
     function applyTheme(themeName) {
@@ -362,10 +345,26 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('display').style.display = 'block';
         document.getElementById('right-display').style.display = 'block';
         
-        // --- START OF FIX: Restore the selection after returning to main menu ---
-        menuItems = getMenuItems();
+        // --- FIX: Restore the main menu structure before updating selection ---
+        restoreMainMenuStructure();
         updateSelection(lastMainMenuIndex); 
-        // --- END OF FIX ---
+        // --- END FIX ---
+    }
+
+    // Helper to restore the default main menu HTML
+    function restoreMainMenuStructure() {
+        const mainHtml = `
+            <div class="header">iMon</div>
+            <ul id="main-menu">
+                <li class="menu-item" data-preview="images/linkedin-preview.png">LinkedIn</li>
+                <li class="menu-item" data-preview="images/cv-preview.png">CV</li>
+                <li class="menu-item" data-preview="images/mail-preview.png">Mail</li>
+                <li class="menu-item" data-preview="images/games-preview.png">Games</li>
+                <li class="menu-item" data-preview="images/settings-preview.png">Settings</li>
+            </ul>
+        `;
+        document.getElementById('display').innerHTML = mainHtml;
+        menuItems = document.querySelectorAll('#main-menu .menu-item');
     }
     
     function gameLoop() {
@@ -487,27 +486,18 @@ document.addEventListener('DOMContentLoaded', function() {
             // Find the 'Theme' item index in the settings menu and select it
             const settingsItems = document.querySelectorAll('#settings-menu .menu-item');
             const themeIndex = Array.from(settingsItems).findIndex(item => item.textContent.trim() === 'Theme');
-            updateSettingsSelection(themeIndex !== -1 ? themeIndex : 0);
+            updateSelection(themeIndex !== -1 ? themeIndex : 0);
         } else if (inSettingsMenu) {
             inSettingsMenu = false;
+            inSubMenu = false; // Exiting all submenus
             screenEl.classList.remove('in-settings');
-            // Restore main menu structure
-            let mainHtml = `
-                <div class="header">iMon</div>
-                <ul id="main-menu">
-                    <li class="menu-item" data-preview="images/linkedin-preview.png">LinkedIn</li>
-                    <li class="menu-item" data-preview="images/cv-preview.png">CV</li>
-                    <li class="menu-item" data-preview="images/mail-preview.png">Mail</li>
-                    <li class="menu-item" data-preview="images/games-preview.png">Games</li>
-                    <li class="menu-item" data-preview="images/settings-preview.png">Settings</li>
-                </ul>
-            `;
-            document.getElementById('display').innerHTML = mainHtml;
-            menuItems = document.querySelectorAll('#main-menu .menu-item');
             
-            // --- START OF FIX: Restore the selection after returning to main menu ---
+            // Restore main menu structure
+            restoreMainMenuStructure();
+            
+            // --- FIX: Restore the selection after returning to main menu ---
             updateSelection(lastMainMenuIndex); 
-            // --- END OF FIX ---
+            // --- END FIX ---
         }
     });
     
@@ -515,14 +505,16 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('center-button').addEventListener('click', function() {
         if (!gameMode) {
             menuItems = getMenuItems(); // Ensure we have the current list
+            if (menuItems.length === 0) return;
+            
             const selectedText = menuItems[currentIndex].textContent.trim();
             const selectedItem = menuItems[currentIndex];
             
-            // --- START OF FIX: Save the current index before navigating away ---
+            // --- FIX START: Save the current index before navigating away, ONLY IF on main menu ---
             if (!inSettingsMenu && !inThemeMenu) {
                 lastMainMenuIndex = currentIndex;
             }
-            // --- END OF FIX ---
+            // --- FIX END ---
             
             if (inThemeMenu) {
                 // Apply theme logic
@@ -595,10 +587,10 @@ document.addEventListener('DOMContentLoaded', function() {
             paddleX = Math.min(paddleX + paddleSpeed * 5, gameCanvas.width - paddleWidth);
         } else if (!gameMode) {
             // Menu navigation (Right)
-            if (!inSubMenu && !inSettingsMenu) {
+            if (!inSettingsMenu && !inThemeMenu) {
                 updateSelection(currentIndex + 1);
             }
-            // Add submenu navigation logic here if needed
+            // Submenu navigation relies on Hammer.js panning for consistency
         }
     });
     
@@ -608,10 +600,10 @@ document.addEventListener('DOMContentLoaded', function() {
             paddleX = Math.max(0, paddleX - paddleSpeed * 5);
         } else if (!gameMode) {
             // Menu navigation (Left)
-            if (!inSubMenu && !inSettingsMenu) {
+            if (!inSettingsMenu && !inThemeMenu) {
                 updateSelection(currentIndex - 1);
             }
-            // Add submenu navigation logic here if needed
+            // Submenu navigation relies on Hammer.js panning for consistency
         }
     });
     
@@ -661,14 +653,18 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeHammerManagers();
     
     // Initial state setup
-    menuItems[currentIndex].classList.add('active');
-    menuItems[currentIndex].scrollIntoView({ block: 'nearest' });
-    previewImage.src = menuItems[currentIndex].dataset.preview;
+    // Ensure the menu items are loaded before initial selection
+    menuItems = getMenuItems();
+    if (menuItems.length > 0) {
+        menuItems[currentIndex].classList.add('active');
+        menuItems[currentIndex].scrollIntoView({ block: 'nearest' });
+        previewImage.src = menuItems[currentIndex].dataset.preview;
+    }
     
     // Initial call to draw, which will then self-loop if running/paused
     function draw() {
-        // This is an empty function since we're not using it directly
-        // The actual drawing happens in the game's draw function
+        // Request an animation frame to keep the loop going if needed
+        animationFrameId = requestAnimationFrame(draw); 
     }
     
     animationFrameId = requestAnimationFrame(draw); 
