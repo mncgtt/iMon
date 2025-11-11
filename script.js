@@ -5,27 +5,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const screenEl = document.getElementById('screen'); // Get the main screen element
     
     let currentIndex = 0;
-    // Rimosso inSubMenu, usiamo i flag specifici
-    let inSettingsMenu = false; // Flag specifically for settings menu
-    let inThemeMenu = false; // Flag for theme submenu
-    let gameMode = false; // Flag to indicate if a game is active
-    let animationFrameId = null; // To store the requestAnimationFrame ID for the game loop
+    let inSettingsMenu = false; 
+    let inThemeMenu = false; 
+    let gameMode = false; 
+    let animationFrameId = null; 
     
-    // --- FIX 1: Variabile per l'elemento selezionato al ritorno al menu principale ---
-    let lastMainMenuIndex = 0; 
-    // --- END FIX 1 ---
+    // --- FIX 1 & NUOVE VARIABILI PER LA CLICKWHEEL ---
+    let lastMainMenuIndex = 0; // Per memorizzare l'indice all'uscita dal menu
+    let lastQuadrant = -1;     // Per la nuova logica di navigazione (0, 1, 2, 3)
+    let rotationSensitivity = 1; // Un flag per regolare la sensibilità se necessario (default 1)
+    // --- FINE NUOVE VARIABILI ---
     
     // Hammer.js instances
     let menuHammerManager = null; 
-    
-    // Variables for menu rotation with Hammer.js
-    let lastMenuAngle = 0; // Usata per Main Menu, Settings Menu, e Theme Menu
     
     // Variables for circular paddle control
     let initialClickwheelAngle = 0; 
     let initialPaddleX = 0; 
     
-    // Game-specific variables (need to be accessible globally or passed)
+    // Game-specific variables (omesse per brevità, sono nel codice)
     let paddleX = 0; 
     let paddleWidth = 0; 
     let canvasDisplayWidth = 0; 
@@ -46,9 +44,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let score = 0;
     let maxScore = 0;
     let bricks = [];
-    let gameContext = null; // Context for the game canvas
-    let gameCanvas = null; // The game canvas element
-    let paddleSpeed = 0; // Speed of the paddle movement
+    let gameContext = null; 
+    let gameCanvas = null; 
+    let paddleSpeed = 0; 
     
     
     // --- UTILITY FUNCTIONS ---
@@ -62,7 +60,6 @@ document.addEventListener('DOMContentLoaded', function() {
      * @param {number} newIndex The index of the item to select.
      */
     function updateSelection(newIndex) {
-        // Aggiorna sempre la lista prima di procedere
         menuItems = getMenuItems(); 
         if (menuItems.length === 0) return;
         
@@ -75,13 +72,10 @@ document.addEventListener('DOMContentLoaded', function() {
             targetIndex = 0;
         }
         
-        // Remove active class from all items
         menuItems.forEach(item => item.classList.remove('active'));
         
-        // Add active class to the new item
         menuItems[targetIndex].classList.add('active');
         
-        // Scroll the new item into view if necessary
         menuItems[targetIndex].scrollIntoView({ block: 'nearest' });
         
         // Update the preview image ONLY if on the main menu
@@ -89,10 +83,13 @@ document.addEventListener('DOMContentLoaded', function() {
             previewImage.src = menuItems[targetIndex].dataset.preview;
         }
         
-        // IMPORTANT: Update the global index tracker
         currentIndex = targetIndex;
     }
     
+    /**
+     * Calculates the angle in degrees from the center of the element to a point (x, y).
+     * 0/360 is at the top (12 o'clock).
+     */
     function getAngle(element, x, y) {
         const rect = element.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
@@ -101,6 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const angleRad = Math.atan2(y - centerY, x - centerX);
         let angleDeg = angleRad * (180 / Math.PI);
         
+        // Normalize the angle so 0/360 is at the top (90 degrees in standard polar)
         angleDeg = (angleDeg + 90 + 360) % 360; 
         
         return angleDeg;
@@ -111,7 +109,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function initializeHammerManagers() {
         if (!menuHammerManager) {
             menuHammerManager = new Hammer.Manager(clickwheel);
-            // Abbassiamo la soglia di Pan, l'iPod è molto sensibile
             menuHammerManager.add(new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 2 }));
             
             menuHammerManager.on('panstart', function(ev) {
@@ -119,14 +116,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     initialClickwheelAngle = getAngle(clickwheel, ev.center.x, ev.center.y);
                     initialPaddleX = paddleX;
                 } else {
-                    // Usiamo lastMenuAngle per TUTTI i menu non-game
-                    lastMenuAngle = getAngle(clickwheel, ev.center.x, ev.center.y);
+                    const startAngle = getAngle(clickwheel, ev.center.x, ev.center.y);
+                    // Memorizza il quadrante iniziale (0=Top/Right, 1=Bottom/Right, 2=Bottom/Left, 3=Top/Left)
+                    lastQuadrant = Math.floor(startAngle / 90); 
                 }
             });
             
             menuHammerManager.on('panmove', function(ev) {
                 if (gameMode) {
-                    // Logica di controllo della paddle per il gioco
+                    // Logica di controllo della paddle (NON CAMBIA)
                     const currentAngle = getAngle(clickwheel, ev.center.x, ev.center.y);
                     let angleDiff = currentAngle - initialClickwheelAngle;
     
@@ -144,38 +142,67 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
     
                 } else {
-                    // Logica di navigazione per tutti i menu (Main, Settings, Theme)
-                    menuItems = getMenuItems(); // Aggiorna la lista
+                    // --- NUOVA LOGICA DI NAVIGAZIONE CON QUADRANTI ---
+                    menuItems = getMenuItems(); 
                     if (menuItems.length === 0) return;
                     
                     const currentAngle = getAngle(clickwheel, ev.center.x, ev.center.y);
-                    let angleDiff = currentAngle - lastMenuAngle;
+                    const currentQuadrant = Math.floor(currentAngle / 90);
+
+                    // Calcola la rotazione basata sul cambio di quadrante
+                    let rotation = currentQuadrant - lastQuadrant;
                     
-                    // --- FIX 2: Aumento la sensibilità (divido per 2 anziché 4) ---
-                    // Se la rotazione supera un certo angolo (es. 360 / (5 elementi * 2) = 36 gradi)
-                    if (Math.abs(angleDiff) >= 360 / (menuItems.length * 2)) { 
-                        if (angleDiff > 0) {
-                            updateSelection(currentIndex + 1);
-                        } else {
-                            updateSelection(currentIndex - 1);
+                    // Normalizza la rotazione: passaggio da 0 a 3 (o viceversa)
+                    if (rotation === 3) rotation = -1; // 3 -> 0 (Antiorario)
+                    if (rotation === -3) rotation = 1; // 0 -> 3 (Orario)
+                    
+                    // Applica la selezione SOLO al cambio di quadrante
+                    if (rotation !== 0) {
+                        // Lo scorrimento è orario
+                        if (rotation > 0) {
+                            updateSelection(currentIndex + rotationSensitivity);
+                        } 
+                        // Lo scorrimento è antiorario
+                        else if (rotation < 0) {
+                            updateSelection(currentIndex - rotationSensitivity);
                         }
-                        lastMenuAngle = currentAngle; // Reset dell'angolo di riferimento
+                        
+                        // Aggiorna il quadrante di riferimento
+                        lastQuadrant = currentQuadrant;
                     }
+                    // --- FINE NUOVA LOGICA ---
                 }
             });
             
             menuHammerManager.on('panend', function(ev) {
-                // Reset dell'angolo di riferimento
-                lastMenuAngle = getAngle(clickwheel, ev.center.x, ev.center.y);
+                // Resetta il quadrante per prepararsi alla prossima interazione
+                const endAngle = getAngle(clickwheel, ev.center.x, ev.center.y);
+                lastQuadrant = Math.floor(endAngle / 90);
             });
         }
     }
     
-    // --- THEME & SETTINGS FUNCTIONS ---
-    
+    // --- ALTRE FUNZIONI (Settings, Theme, Game) ---
+
+    // Funzione helper per ripristinare il codice HTML del menu principale
+    function restoreMainMenuStructure() {
+        const mainHtml = `
+            <div class="header">iMon</div>
+            <ul id="main-menu">
+                <li class="menu-item" data-preview="images/linkedin-preview.png">LinkedIn</li>
+                <li class="menu-item" data-preview="images/cv-preview.png">CV</li>
+                <li class="menu-item" data-preview="images/mail-preview.png">Mail</li>
+                <li class="menu-item" data-preview="images/games-preview.png">Games</li>
+                <li class="menu-item" data-preview="images/settings-preview.png">Settings</li>
+            </ul>
+        `;
+        document.getElementById('display').innerHTML = mainHtml;
+        menuItems = document.querySelectorAll('#main-menu .menu-item');
+    }
+
     function showSettingsMenu() {
         inSettingsMenu = true;
-        inThemeMenu = false; // Solo per sicurezza
+        inThemeMenu = false; 
         screenEl.classList.add('in-settings');
         document.getElementById('right-display').style.display = 'none'; 
         
@@ -188,7 +215,6 @@ document.addEventListener('DOMContentLoaded', function() {
             </ul>
         `;
         document.getElementById('display').innerHTML = settingsHtml;
-        // La chiamata a updateSelection(0) è implicita, ma esplicito per chiarezza
         updateSelection(0); 
     }
     
@@ -208,30 +234,17 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSelection(0); 
     }
     
-    function applyTheme(themeName) {
-        document.body.className = '';
-        document.body.classList.add(`theme-${themeName}`);
-        localStorage.setItem('ipodTheme', themeName); 
-    }
-    
-    function loadTheme() {
-        const savedTheme = localStorage.getItem('ipodTheme') || 'default';
-        applyTheme(savedTheme);
-    }
-    
-    // --- GAME FUNCTIONS (Breakout Game) ---
-    
     function startBreakoutGame() {
-        // --- FIX 3: Salva l'indice del menu principale prima di uscire ---
+        // --- FIX 1: Salva l'indice del menu principale prima di uscire ---
         lastMainMenuIndex = currentIndex;
-        // --- END FIX 3 ---
+        // --- FINE FIX 1 ---
         
         gameMode = true;
         screenEl.classList.add('in-game');
         document.getElementById('display').style.display = 'none'; 
         document.getElementById('right-display').style.display = 'none'; 
         
-        // Setup canvas (omesso per brevità, assumiamo che la logica del canvas sia ok)
+        // ... Logica di inizializzazione del gioco (omessa per brevità) ...
         gameCanvas = document.getElementById('game-canvas');
         if (!gameCanvas) {
             gameCanvas = document.createElement('canvas');
@@ -240,8 +253,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         gameContext = gameCanvas.getContext('2d');
-        
-        // ... Logica di inizializzazione del gioco ...
         const screenRect = screenEl.getBoundingClientRect();
         gameCanvas.width = screenRect.width * 0.9; 
         gameCanvas.height = screenRect.height * 0.9;
@@ -264,8 +275,8 @@ document.addEventListener('DOMContentLoaded', function() {
         brickPadding = 5;
         brickOffsetTop = gameCanvas.height * 0.1;
         brickOffsetLeft = 5;
-        
         score = 0;
+        maxScore = brickRowCount * brickColumnCount;
         
         bricks = [];
         for(let c = 0; c < brickColumnCount; c++) {
@@ -274,11 +285,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 bricks[c][r] = { x: 0, y: 0, status: 1 };
             }
         }
-        maxScore = brickRowCount * brickColumnCount;
         
         running = true;
         paused = false;
-        
         gameLoop(); 
     }
     
@@ -303,51 +312,36 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('display').style.display = 'block';
         document.getElementById('right-display').style.display = 'block';
         
-        // Ripristina la struttura del menu e poi la selezione
         restoreMainMenuStructure();
         // --- FIX 1: Ripristina la selezione all'uscita ---
         updateSelection(lastMainMenuIndex); 
-        // --- END FIX 1 ---
-    }
-
-    function restoreMainMenuStructure() {
-        const mainHtml = `
-            <div class="header">iMon</div>
-            <ul id="main-menu">
-                <li class="menu-item" data-preview="images/linkedin-preview.png">LinkedIn</li>
-                <li class="menu-item" data-preview="images/cv-preview.png">CV</li>
-                <li class="menu-item" data-preview="images/mail-preview.png">Mail</li>
-                <li class="menu-item" data-preview="images/games-preview.png">Games</li>
-                <li class="menu-item" data-preview="images/settings-preview.png">Settings</li>
-            </ul>
-        `;
-        document.getElementById('display').innerHTML = mainHtml;
-        menuItems = document.querySelectorAll('#main-menu .menu-item');
+        // --- FINE FIX 1 ---
     }
     
+    // ... Logica gameLoop, collisionDetection, drawGame (omessa per brevità) ...
     function gameLoop() {
         if (!running || paused || !gameContext) {
             animationFrameId = null;
             return;
         }
-        
         drawGame();
-        
         ballX += ballSpeedX;
         ballY += ballSpeedY;
         
-        // Logica di collisione (omessa per brevità, è corretta nel tuo codice)
+        // Collisioni con i muri
         if (ballX + ballSpeedX > gameCanvas.width - radius || ballX + ballSpeedX < radius) {
             ballSpeedX = -ballSpeedX;
         }
         if (ballY + ballSpeedY < radius) {
             ballSpeedY = -ballSpeedY;
         } else if (ballY + ballSpeedY > gameCanvas.height - radius - 10) { 
+            // Collisione con la paddle
             if (ballX > paddleX && ballX < paddleX + paddleWidth) {
                 ballSpeedY = -ballSpeedY;
                 let hitPoint = (ballX - paddleX) / paddleWidth; 
                 ballSpeedX = (hitPoint - 0.5) * 2 * (gameCanvas.width * 0.006); 
             } else if (ballY + ballSpeedY > gameCanvas.height - radius) {
+                // Game Over
                 alert("GAME OVER! Score: " + score);
                 stopBreakoutGame();
                 return;
@@ -361,7 +355,6 @@ document.addEventListener('DOMContentLoaded', function() {
             stopBreakoutGame();
             return;
         }
-        
         animationFrameId = requestAnimationFrame(gameLoop);
     }
     
@@ -384,9 +377,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function drawGame() {
-        // Logica di disegno (omessa per brevità, è corretta nel tuo codice)
         gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
         
+        // Draw Bricks
         for(let c = 0; c < brickColumnCount; c++) {
             for(let r = 0; r < brickRowCount; r++) {
                 if (bricks[c][r].status === 1) {
@@ -401,47 +394,48 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
+        // Draw Paddle
         gameContext.beginPath();
         gameContext.rect(paddleX, gameCanvas.height - 10, paddleWidth, 10);
         gameContext.fillStyle = "#A7A7A7"; 
         gameContext.fill();
         gameContext.closePath();
         
+        // Draw Ball
         gameContext.beginPath();
         gameContext.arc(ballX, ballY, radius, 0, Math.PI * 2);
         gameContext.fillStyle = "#A7A7A7"; 
         gameContext.fill();
         gameContext.closePath();
         
+        // Draw Score
         gameContext.font = "16px Inter";
         gameContext.fillStyle = "#A7A7A7";
         gameContext.fillText("Score: " + score, 8, gameCanvas.height - 5);
     }
-    
+
     // --- EVENT LISTENERS ---
     
+    // Tasto MENU
     document.getElementById('menu-button').addEventListener('click', function() {
         if (gameMode) {
             stopBreakoutGame();
-            // lastMainMenuIndex viene ripristinato in stopBreakoutGame()
         } else if (inThemeMenu) {
             inThemeMenu = false;
-            // Torna al menu Settings
             showSettingsMenu();
-            // L'indice del Theme item è sempre 0 nel menu Settings in questo codice
             updateSelection(0); 
         } else if (inSettingsMenu) {
             inSettingsMenu = false;
             screenEl.classList.remove('in-settings');
             
-            // Ripristina la struttura del menu principale e la selezione
             restoreMainMenuStructure();
             // --- FIX 1: Ripristina la selezione all'uscita ---
             updateSelection(lastMainMenuIndex); 
-            // --- END FIX 1 ---
+            // --- FINE FIX 1 ---
         }
     });
     
+    // Tasto CENTRALE (Select)
     document.getElementById('center-button').addEventListener('click', function() {
         if (!gameMode) {
             menuItems = getMenuItems(); 
@@ -450,14 +444,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const selectedText = menuItems[currentIndex].textContent.trim();
             const selectedItem = menuItems[currentIndex];
             
-            // --- FIX 3: Salva l'indice del menu principale prima di navigare via ---
-            if (!inSettingsMenu && !inThemeMenu && selectedText !== "Settings" && selectedText !== "Games") {
-                // Non salviamo l'indice se stiamo per uscire, perché è già stato salvato
-            } else if (!inSettingsMenu && !inThemeMenu && (selectedText === "Settings" || selectedText === "Games")) {
-                // Salviamo l'indice SOLO quando entriamo in un sottomenu che ci farà usare Menu per tornare
+            // --- FIX 1: Salva l'indice del menu principale prima di navigare via ---
+            if (!inSettingsMenu && !inThemeMenu && (selectedText === "Settings" || selectedText === "Games")) {
                 lastMainMenuIndex = currentIndex;
             }
-            // --- END FIX 3 ---
+            // --- FINE FIX 1 ---
             
             if (inThemeMenu) {
                 const themeName = selectedItem.dataset.theme;
@@ -470,7 +461,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (selectedText === "Reset") {
                     if (confirm("Are you sure you want to reset the theme?")) {
                         localStorage.removeItem('ipodTheme');
-                        loadTheme(); 
+                        // Carica il tema di default dopo il reset
+                        document.body.className = '';
+                        document.body.classList.add('theme-default'); 
                         alert("Theme reset to Default.");
                     }
                 }
@@ -495,7 +488,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         } else {
-            // In game mode, Center Button can be used to pause/unpause
+            // Tasto centrale in modalità gioco: Pausa/Riprendi
             paused = !paused;
             if (running && !paused) {
                 gameLoop(); 
@@ -504,8 +497,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Tasto Play/Pause (in basso)
     document.getElementById('play-pause-button').addEventListener('click', function() {
         if (gameMode) {
+            // Stessa funzione del tasto centrale in modalità gioco
             paused = !paused;
             if (running && !paused) {
                 gameLoop(); 
@@ -514,12 +509,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Tasti Forward/Back (Game controls, solo per tastiera/pulsante)
     document.getElementById('forward-button').addEventListener('click', function() {
         if (gameMode && !paused && gameCanvas) {
             paddleX = Math.min(paddleX + paddleSpeed * 5, gameCanvas.width - paddleWidth);
         } else if (!gameMode) {
-            // In un vero iPod, i pulsanti laterali NON scorrono i menu.
-            // Li ho lasciati per il debug, ma meglio affidarsi a Hammer.js
+            // Navigazione Menu (per debug)
             updateSelection(currentIndex + 1);
         }
     });
@@ -528,7 +523,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (gameMode && !paused) {
             paddleX = Math.max(0, paddleX - paddleSpeed * 5);
         } else if (!gameMode) {
-            // Vedi nota sopra
+            // Navigazione Menu (per debug)
             updateSelection(currentIndex - 1);
         }
     });
@@ -567,19 +562,28 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // --- INITIALIZATION ---
     
+    function applyTheme(themeName) {
+        document.body.className = '';
+        document.body.classList.add(`theme-${themeName}`);
+        localStorage.setItem('ipodTheme', themeName); 
+    }
+    
+    function loadTheme() {
+        const savedTheme = localStorage.getItem('ipodTheme') || 'default';
+        applyTheme(savedTheme);
+    }
+    
     loadTheme();
     initializeHammerManagers();
     
     // Initial state setup
     menuItems = getMenuItems();
     if (menuItems.length > 0) {
-        // La selezione iniziale è gestita da updateSelection(0) che è implicita o dalla classe 'active' in HTML
         updateSelection(0); 
     }
     
-    function draw() {
+    // Avvia l'animation frame loop (necessario anche se non in game per l'init)
+    (function draw() {
         animationFrameId = requestAnimationFrame(draw); 
-    }
-    
-    animationFrameId = requestAnimationFrame(draw); 
+    })(); 
 });
