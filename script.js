@@ -35,9 +35,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Game state flags for win/lose
     let gameWon = false;
-    let winAnimationStartTime = 0; // For win animation timing
-    let winAnimationDuration = 1000; // Animation duration in milliseconds (adjusted to be slower)
-    let gameElementsVisible = true; // Flag to control game elements visibility
+    let winAnimationStartTime = 0;
+    let winAnimationDuration = 1000; 
+    let gameElementsVisible = true; 
     
     // Track key states for smoother movement
     const keyState = {
@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
     menuItems[currentIndex].scrollIntoView({ block: 'nearest' });
     previewImage.src = menuItems[currentIndex].dataset.preview;
     
-    // Function to restore the main menu view without animation
+    // 🚨 FIX APPLIED HERE: Re-establishing menuItems reference
     function restoreMenu() {
         console.log("Restoring menu...");
         
@@ -553,38 +553,48 @@ document.addEventListener('DOMContentLoaded', function() {
         inThemeMenu = false;
         inGamesMenu = false;
         
-        // Store the current preview image path before rebuilding the menu
-        const currentPreviewPath = menuItems[currentIndex].dataset.preview;
+        // Use a safe default preview path, as the old menu structure is gone.
+        const defaultPreviewPath = "images/linkedin-preview.png";
         
-        // Create menu HTML without animation class
+        // Create menu HTML without animation class (Ensure this list matches your initial list)
         const menuHTML = `
             <div id="display">
                 <div id="menu-title">iMon</div>
                 <div id="menu-container">
                     <ul id="menu-list">
-                        <li class="menu-item ${currentIndex === 0 ? 'active' : ''}" data-preview="images/linkedin-preview.png">LinkedIn</li>
-                        <li class="menu-item ${currentIndex === 1 ? 'active' : ''}" data-preview="images/behance-preview.png">Behance</li>
-                        <li class="menu-item ${currentIndex === 2 ? 'active' : ''}" data-preview="images/mail-preview.png">Mail</li>
-                        <li class="menu-item ${currentIndex === 3 ? 'active' : ''}" data-preview="images/games-preview.png">Games</li>
-                        <li class="menu-item ${currentIndex === 4 ? 'active' : ''}" data-preview="images/settings-preview.png">Settings</li>
+                        <li class="menu-item" data-preview="images/linkedin-preview.png">LinkedIn</li>
+                        <li class="menu-item" data-preview="images/behance-preview.png">Behance</li>
+                        <li class="menu-item" data-preview="images/cv-preview.png">CV</li>
+                        <li class="menu-item" data-preview="images/mail-preview.png">Mail</li>
+                        <li class="menu-item" data-preview="images/games-preview.png">Games</li>
+                        <li class="menu-item" data-preview="images/settings-preview.png">Settings</li>
                     </ul>
                 </div>
             </div>
             <div id="right-display">
-                <img src="${currentPreviewPath}" alt="Preview" class="display-icon" id="preview-image">
+                <img src="${defaultPreviewPath}" alt="Preview" class="display-icon" id="preview-image">
             </div>
         `;
         
         // Replace screen content immediately
         screenEl.innerHTML = menuHTML;
         
-        // Reinitialize menu items and event listeners
+        // **CRITICAL FIX:** Reinitialize menuItems to point to the new DOM elements.
         menuItems = document.querySelectorAll('.menu-item');
         previewImage = document.getElementById('preview-image');
+        
+        // **CRITICAL FIX:** Reset currentIndex to 0 or another valid starting point,
+        // as the index from the submenu might be invalid for the main menu.
+        currentIndex = 0; 
         
         // Make sure the active item is visible
         menuItems[currentIndex].classList.add('active');
         menuItems[currentIndex].scrollIntoView({ block: 'nearest' });
+
+        // Update the preview image after the reset
+        previewImage.src = menuItems[currentIndex].dataset.preview;
+
+        console.log("Menu restored. New currentIndex:", currentIndex);
     }
     
     // Function to show the Settings menu without animation
