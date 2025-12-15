@@ -579,31 +579,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Replace screen content immediately
         screenEl.innerHTML = menuHTML;
         
-// 🚨 FIX APPLIED HERE: Re-establishing menuItems reference
-    function restoreMenu() {
-        console.log("Restoring menu...");
-        
-        // ... (resto della funzione, pulizia e reset dei flag) ...
-        
-        // ... (menuHTML creation) ...
-        
-        // Replace screen content immediately
-        screenEl.innerHTML = menuHTML;
-        
         // **CRITICAL FIX:** Reinitialize menuItems to point to the new DOM elements.
         menuItems = document.querySelectorAll('.menu-item');
         previewImage = document.getElementById('preview-image');
         
-        // *** FIX: RIMOSSO IL RESET FORZATO A 0 ***
-        // Il currentIndex conserva l'indice dell'ultima voce del menu principale selezionata 
-        // (es. "Settings" o "Games") prima di entrare nel sottomenu, garantendo che l'ultima
-        // selezione valida venga ripristinata.
+        // **CRITICAL FIX:** Reset currentIndex to 0 or another valid starting point,
+        // as the index from the submenu might be invalid for the main menu.
+        currentIndex = 0; 
         
-        // Aggiungi un controllo di sicurezza per assicurarti che l'indice sia valido (opzionale ma consigliato)
-        if (currentIndex < 0 || currentIndex >= menuItems.length) {
-            currentIndex = 0;
-        }
-
         // Make sure the active item is visible
         menuItems[currentIndex].classList.add('active');
         menuItems[currentIndex].scrollIntoView({ block: 'nearest' });
