@@ -1,4 +1,3 @@
-/* Disable scrolling */
 html, body {
    overflow: hidden;
    margin: 0;
@@ -8,16 +7,13 @@ html, body {
    background: #0C1117;
   }
   
-/* Background image, NO overlay */
 body {
-  /* RIPRISTINATO: Sfondo solido e neutro per il contenitore */
   background: #0C1117; 
-  /* Rimuovi background-repeat/attachment/size da qui */
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative; /* Necessario per posizionare ::before */
+  position: relative;
 }
 
 @media only screen and (max-width: 768px) {
@@ -29,26 +25,22 @@ body {
     margin-top: 20vh;
   }
    
-  /* Rimuovi il backdrop-filter su mobile se crea problemi */
   .ipod-container {
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
   }
 }
   
-  /* ipod-wrapper is just a flex container */
   .ipod-wrapper {
    display: flex;
    justify-content: center;
    align-items: center;
   }
   
-  /* Define a base scale factor for 1mm */
   :root {
    --mm-to-px: 4px;
   }
   
-  /* Zoom-in animation for iPod on page load */
   @keyframes ipodZoomIn {
   0% {
     transform: scale(0.8);
@@ -63,7 +55,6 @@ body {
   }
   }
   
-  /* Base iPod container size */
   .ipod-container {
    width: calc(40 * var(--mm-to-px));
    height: calc(55 * var(--mm-to-px));
@@ -85,13 +76,11 @@ body {
    inset 0 calc(-2 * var(--mm-to-px)) calc(3 * var(--mm-to-px)) rgba(0,0,0,0.05);
    position: relative;
    overflow: hidden;
-   animation: ipodZoomIn 0.8s ease-out forwards; /* Added animation */
+   animation: ipodZoomIn 0.8s ease-out forwards;
    transition: background 0.5s ease;
-   /* Filtro di sfocatura dietro l'iPod, reagisce allo sfondo mosso */
-    backdrop-filter: blur(15px) saturate(1.5); /* Puoi regolare i valori */
-    -webkit-backdrop-filter: blur(15px) saturate(1.5); /* Per Safari */
+    backdrop-filter: blur(15px) saturate(1.5);
+    -webkit-backdrop-filter: blur(15px) saturate(1.5);
     
-    /* Assicurati che l'iPod sia sopra gli pseudo-elementi */
     z-index: 10;
   }
   
@@ -135,15 +124,14 @@ body {
    flex-direction: column;
   }
   
-  /* Top grey bar */
   #menu-title {
    position: sticky;
    top: 0;
    z-index: 10;
    font-weight: bold;
-   padding: calc(0.4 * var(--mm-to-px)) calc(1 * var(--mm-to-px)); /* slightly less vertical padding */
-   font-size: calc(1.25 * var(--mm-to-px)); /* slightly smaller text */
-   background: linear-gradient(to bottom, #ffffff, #bfbfbf); /* whiter at top, darker at bottom */
+   padding: calc(0.4 * var(--mm-to-px)) calc(1 * var(--mm-to-px));
+   font-size: calc(1.25 * var(--mm-to-px));
+   background: linear-gradient(to bottom, #ffffff, #bfbfbf);
    color: #000;
    border-top-left-radius: calc(0.5 * var(--mm-to-px));
    border-top-right-radius: calc(0.5 * var(--mm-to-px));
@@ -159,7 +147,6 @@ body {
    flex-grow: 1;
   }
   
-  /* Scrollbar styling */
   #menu-container::-webkit-scrollbar {
    width: calc(1px * var(--mm-to-px) / 4px);
   }
@@ -181,8 +168,7 @@ body {
    padding: calc(0.4 * var(--mm-to-px)) 0;
    font-weight: bold;
    font-size: calc(1.6 * var(--mm-to-px));
-   position: relative; /* Needed for arrow positioning */
-   /* Removed transition */
+   position: relative;
   }
   
   .menu-item.active {
@@ -191,28 +177,24 @@ body {
    margin-left: calc(-1 * var(--mm-to-px));
    margin-right: calc(-1 * var(--mm-to-px));
    padding-left: calc(1 * var(--mm-to-px));
-   padding-right: calc(4 * var(--mm-to-px)); /* extra space for bigger arrow */
+   padding-right: calc(4 * var(--mm-to-px));
    box-shadow: inset 0 calc(-1 * var(--mm-to-px)) calc(1 * var(--mm-to-px)) rgba(0, 0, 0, 0.1);
-   /* Removed transform */
   }
   
-  /* Arrow for active menu item */
   .menu-item.active::after {
     content: '';
     display: block;
-    width: calc(3 * var(--mm-to-px));   /* bigger arrow */
+    width: calc(3 * var(--mm-to-px));
     height: calc(3 * var(--mm-to-px));
     background: url('images/arrow.svg') no-repeat center center;
     background-size: contain;
     position: absolute;
-    right: 0;   /* flush to the right edge */
+    right: 0;
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
   }
   
-  /* Right-side display */
-  /* Right-side display - more aggressive fix */
   #right-display {
    width: calc(16 * var(--mm-to-px));
    height: 100%;
@@ -230,23 +212,22 @@ body {
    align-items: center;
    padding: 0;
    overflow: hidden;
-   position: relative; /* Add position relative */
+   position: relative;
   }
   
   .display-icon {
-   width: calc(100% + 2px); /* Make the image slightly wider */
+   width: calc(100% + 2px);
    height: 100%;
    object-fit: cover;
    opacity: 0.8;
    user-select: none;
    -webkit-user-drag: none;
    display: block;
-   position: absolute; /* Position absolutely */
-   left: 0; /* Align to the left */
-   top: 0; /* Align to the top */
+   position: absolute;
+   left: 0;
+   top: 0;
   }
   
-  /* Clickwheel */
   .clickwheel {
    width: calc(22 * var(--mm-to-px));
    height: calc(22 * var(--mm-to-px));
@@ -265,16 +246,13 @@ body {
    display: flex;
    justify-content: center;
    align-items: center;
-   /* Removed transition */
   }
   
   .top { top: -5%; left: 50%; transform: translateX(-50%); }
   .right { right: -3%; top: 50%; transform: translateY(-50%); }
   .bottom { bottom: -5%; left: 50%; transform: translateX(-50%); }
   .left { left: -3%; top: 50%; transform: translateY(-50%); }
-  
-  /* Removed all button animations */
-  
+    
   .center-button {
    position: absolute;
    width: calc(11 * var(--mm-to-px));
@@ -288,7 +266,6 @@ body {
    box-shadow: 
        inset 0 calc(-0.2 * var(--mm-to-px)) calc(0.5 * var(--mm-to-px)) rgba(255,255,255,0.25),
        inset 0 calc(0.2 * var(--mm-to-px)) calc(0.8 * var(--mm-to-px)) rgba(0,0,0,0.06);
-   /* Removed transition */
   }
   
   .ipod-icon {
@@ -300,7 +277,6 @@ body {
    pointer-events: none;
   }
   
-  /* Desktop sizing */
   @media (min-width: 769px) {
    .ipod-container {
        width: min(400px, 90vw); 
@@ -310,7 +286,6 @@ body {
    }
   }
   
-  /* Mobile responsive sizing */
   @media (max-width: 768px) {
    .ipod-container {
        width: min(90vw, calc(90svh * (40 / 55)));
@@ -321,9 +296,7 @@ body {
    }
   }
   
-  /* Theme styles */
   body.theme-light {
-   /* Default theme, no changes needed */
   }
   
   body.theme-dark .ipod-container {
@@ -336,25 +309,23 @@ body {
   }
   
   body.theme-dark .clickwheel {
-   background: #111111; /* Solid black clickwheel */
+   background: #111111;
    box-shadow: 
        0 0 calc(2 * var(--mm-to-px)) rgba(0,0,0,0.3),
-       inset 0 0 calc(4 * var(--mm-to-px)) rgba(0,0,0,0.5); /* Dark inset shadow instead of white */
+       inset 0 0 calc(4 * var(--mm-to-px)) rgba(0,0,0,0.5);
   }
   
   body.theme-dark .center-button {
-   background: #222222; /* Solid dark gray center button */
+   background: #222222;
    box-shadow: 
        inset 0 calc(-0.2 * var(--mm-to-px)) calc(0.5 * var(--mm-to-px)) rgba(0,0,0,0.25),
        inset 0 calc(0.2 * var(--mm-to-px)) calc(0.8 * var(--mm-to-px)) rgba(0,0,0,0.3);
   }
   
-  /* Make SVG icons white in dark theme */
   body.theme-dark .ipod-icon {
-   filter: brightness(0) invert(1); /* This turns the icons white */
+   filter: brightness(0) invert(1);
   }
   
-  /* Mint theme - Light green-blue with white clickwheel */
   body.theme-mint .ipod-container {
    background: linear-gradient(145deg, #98CFD1, #7ABFC1);
    color: white;
@@ -364,7 +335,6 @@ body {
    border-color: #555555;
   }
   
-  /* Mint theme - Light green-blue with white clickwheel and mint center button */
   body.theme-mint .ipod-container {
    background: linear-gradient(145deg, #98CFD1, #7ABFC1);
    color: white;
@@ -374,7 +344,6 @@ body {
    border-color: #000000;
   }
    
-  /* Clickwheel remains white like in light theme */
   body.theme-mint .clickwheel {
    background: linear-gradient(145deg, #f0f0f0, #ffffff);
    box-shadow: 
@@ -382,7 +351,6 @@ body {
        inset 0 0 calc(4 * var(--mm-to-px)) rgba(255,255,255,0.5);
   }
    
-  /* Center button now mint */
   body.theme-mint .center-button {
    background: linear-gradient(145deg, #98CFD1, #7ABFC1);
    box-shadow: 
@@ -390,18 +358,16 @@ body {
        inset 0 calc(0.2 * var(--mm-to-px)) calc(0.8 * var(--mm-to-px)) rgba(0,0,0,0.06);
   }
   
-  /* Remove all animations */
   .fade-in, .fade-out, .slide-in-right, .slide-in-left, .slide-out-right, .slide-out-left {
   animation: none;
   }
 
-/* Stile e Posizionamento del Testo di Sfondo */
 #background-text {
-    position: absolute; /* Riferito al <body> */
-    top: 120px; /* Margine dall'alto */
-    left: 200px; /* Margine da sinistra */
-    z-index: 1; /* Assicura che sia sopra lo sfondo ma sotto l'iPod (che ha z-index più alto) */
-    color: #ffffff; /* Colore del testo */
+    position: absolute;
+    top: 120px;
+    left: 200px;
+    z-index: 1;
+    color: #ffffff;
     font-family: 'Doto', monospace;
     opacity: 1;
 }
@@ -416,7 +382,6 @@ body {
     margin: 0;
 }
 
-/* Regola per evitare che il testo sia troppo grande sui dispositivi mobili */
 @media (max-width: 768px) {
     #background-text {
         top: 20px;
