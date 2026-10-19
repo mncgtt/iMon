@@ -56,10 +56,18 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     youWinImage.onload = onImageLoad;
     
+    function downloadCV() {
+    const link = document.createElement('a');
+    link.href = './Monica-Gottardi-CV.pdf';
+    link.download = 'Monica-Gottardi-CV.pdf';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+}
     const links = {
         "LinkedIn": "https://www.linkedin.com/in/monicagottardi",
         "Behance": "https://www.behance.net/monicagottardi",
-        "CV": "https://drive.google.com/drive/folders/1Lljhj2zPl8zjRdFb4QppszHeY8YD7SCH?usp=drive_link",
+        "CV": "./Monica-Gottardi-CV.pdf",
         "Mail": "mailto:monicagottardi@outlook.com"
     };
     
@@ -271,7 +279,9 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 const selectedText = menuItems[currentIndex].textContent.trim();
                 if (links[selectedText]) {
-                    if (selectedText === "Mail") {
+                    if (selectedText === "CV") {
+    downloadCV();
+} else if (selectedText === "Mail") {
                         window.location.href = links[selectedText];
                     } else {
                         window.open(links[selectedText], '_blank');
