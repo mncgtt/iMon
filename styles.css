@@ -403,6 +403,8 @@ body {
   min-width: 0;
 }
 
+} /* End the mobile-only media query */
+
 /* Disable text selection across the entire website */
 *,
 *::before,
