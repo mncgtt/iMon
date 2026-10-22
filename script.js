@@ -254,26 +254,20 @@ document.addEventListener('DOMContentLoaded', function() {
     settingsHammerManager.set({ enable: false });
     console.log("Settings Hammer.js manager initialized.");
 
+        // Mobile controls: reuse existing paddle movement logic
     clickwheel.addEventListener('pointerdown', function(event) {
         if (!gameMode || gameWon || canvasDisplayWidth === 0 || paddleWidth === 0) return;
 
-        const action = event.target.closest('[data-action]')?.dataset.action;
+        const button = event.target.closest('[data-action]');
+        if (!button) return;
 
-        if (action === 'back') {
-            event.preventDefault();
-            paddleX -= 8;
-            if (paddleX < 0) paddleX = 0;
-            keyState.ArrowLeft = true;
-            keyState.ArrowRight = false;
-        } else if (action === 'forward') {
-            event.preventDefault();
-            paddleX += 8;
-            if (paddleX + paddleWidth > canvasDisplayWidth) {
-                paddleX = canvasDisplayWidth - paddleWidth;
-            }
-            keyState.ArrowRight = true;
-            keyState.ArrowLeft = false;
-        }
+        const action = button.dataset.action;
+        if (action !== 'back' && action !== 'forward') return;
+
+        event.preventDefault();
+
+        keyState.ArrowLeft = action === 'back';
+        keyState.ArrowRight = action === 'forward';
     });
 
     document.addEventListener('pointerup', function() {
