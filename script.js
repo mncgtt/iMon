@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let lastMenuAngle = 0;
     let lastSettingsAngle = 0;
 
-    let initialClickwheelAngle = 0; 
+    let initialAngle = 0; 
     let initialPaddleX = 0; 
     
     let paddleX = 0; 
@@ -253,7 +253,39 @@ document.addEventListener('DOMContentLoaded', function() {
     settingsHammerManager.on('panend', onSettingsPanEnd);
     settingsHammerManager.set({ enable: false });
     console.log("Settings Hammer.js manager initialized.");
-    
+
+    clickwheel.addEventListener('pointerdown', function(event) {
+        if (!gameMode || gameWon || canvasDisplayWidth === 0 || paddleWidth === 0) return;
+
+        const action = event.target.closest('[data-action]')?.dataset.action;
+
+        if (action === 'back') {
+            event.preventDefault();
+            paddleX -= 8;
+            if (paddleX < 0) paddleX = 0;
+            keyState.ArrowLeft = true;
+            keyState.ArrowRight = false;
+        } else if (action === 'forward') {
+            event.preventDefault();
+            paddleX += 8;
+            if (paddleX + paddleWidth > canvasDisplayWidth) {
+                paddleX = canvasDisplayWidth - paddleWidth;
+            }
+            keyState.ArrowRight = true;
+            keyState.ArrowLeft = false;
+        }
+    });
+
+    document.addEventListener('pointerup', function() {
+        keyState.ArrowLeft = false;
+        keyState.ArrowRight = false;
+    });
+
+    document.addEventListener('pointercancel', function() {
+        keyState.ArrowLeft = false;
+        keyState.ArrowRight = false;
+    });
+
     clickwheel.addEventListener('click', function(event) {
         const action = event.target.closest('[data-action]')?.dataset.action;
         if (!action) return;
