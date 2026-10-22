@@ -1143,11 +1143,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     
         document.getElementById('menu-button').onclick = exitGame; 
+
         
-        document.getElementById('select-button').addEventListener('click', function() {
-            console.log("Select button clicked, calling launchBall");
-            launchBall();
-        });
+document.getElementById('select-button').addEventListener('click', function(event) {
+    event.stopPropagation();
+    console.log("Select button clicked, calling launchBall");
+    launchBall();
+});
     
         window.gameLaunchBall = launchBall;
         window.startGame = startGame;
