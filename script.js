@@ -20,9 +20,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let lastSettingsAngle = 0;
 
     let initialAngle = 0; 
-    let initialPaddleX = 0;
-    let panStartedOnArrow = false;
-
+    let initialPaddleX = 0; 
+    
     let paddleX = 0; 
     let paddleWidth = 0; 
     let canvasDisplayWidth = 0; 
@@ -192,32 +191,18 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("Settings Pan End.");
     }
     
-    
-function onPanStart(e) {
-    if (!gameMode) return;
-
-    const target = e.srcEvent?.target;
-    panStartedOnArrow = !!target?.closest(
-        '[data-action="back"], [data-action="forward"]'
-    );
-
-    // If the gesture started on an arrow, don't rotate the wheel.
-    if (panStartedOnArrow) return;
-
-    const rect = clickwheel.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-
-    initialClickwheelAngle = Math.atan2(
-        e.center.y - centerY,
-        e.center.x - centerX
-    );
-    initialPaddleX = paddleX;
-}
+    function onPanStart(e) {
+        if (gameMode) { 
+            const rect = clickwheel.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            initialClickwheelAngle = Math.atan2(e.center.y - centerY, e.center.x - centerX);
+            initialPaddleX = paddleX; 
+        }
     }
     
     function onPanMove(e) {
-    if (panStartedOnArrow) return;
         if (gameMode) { 
             const rect = clickwheel.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
@@ -251,9 +236,8 @@ function onPanStart(e) {
         }
     }
     
-    function onPanEnd(e) {
-    panStartedOnArrow = false;
-}
+    function onPanEnd(e) { // game paddle
+    }
     
     menuHammerManager = new Hammer.Manager(clickwheel);
     menuHammerManager.add(new Hammer.Pan({ threshold: 10 }));
