@@ -10,8 +10,10 @@ let inSettingsMenu = false;
 let inThemeMenu = false;
 let inGamesMenu = false;
 let gameMode = false;
-let gamePanStartedOnButton = false;
 let animationFrameId = null;
+let pendingGameButtonAction = null;
+let gameButtonPointerId = null;
+let gameButtonPressTimer = null;
 
 let menuHammerManager = null;
 let settingsHammerManager = null;
@@ -20,7 +22,7 @@ let gameHammerManager = null;
 let lastMenuAngle = 0;
 let lastSettingsAngle = 0;
 
-let initialAngle = 0; 
+let initialClickwheelAngle = 0;
 let initialPaddleX = 0; 
 
 let paddleX = 0; 
@@ -195,10 +197,16 @@ console.log("Settings Pan End.");
 function onPanStart(e) {
     if (!gameMode) return;
 
-    // Ignore gestures starting on directional buttons
-    gamePanStartedOnButton = !!e.srcEvent.target.closest('.button');
+    // A wheel gesture takes priority over a pending directional-button press.
+    if (gameButtonPressTimer) {
+        clearTimeout(gameButtonPressTimer);
+        gameButtonPressTimer = null;
+    }
 
-    if (gamePanStartedOnButton) return;
+    pendingGameButtonAction = null;
+    gameButtonPointerId = null;
+    keyState.ArrowLeft = false;
+    keyState.ArrowRight = false;
 
     const rect = clickwheel.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -213,7 +221,7 @@ function onPanStart(e) {
 }
 
 function onPanMove(e) {
-    if (!gameMode || gamePanStartedOnButton) return;
+    if (!gameMode) return;
 
     const rect = clickwheel.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -246,8 +254,9 @@ function onPanMove(e) {
 }
 
 function onPanEnd(e) {
-    gamePanStartedOnButton = false;
+    // The next gesture starts with a fresh angle and paddle position.
 }
+
 
 menuHammerManager = new Hammer.Manager(clickwheel);
 menuHammerManager.add(new Hammer.Pan({ threshold: 10 }));
@@ -264,31 +273,56 @@ settingsHammerManager.on('panend', onSettingsPanEnd);
 settingsHammerManager.set({ enable: false });
 console.log("Settings Hammer.js manager initialized.");
 
-// Mobile controls: reuse existing paddle movement logic
+// Mobile controls: distinguish directional-button holds from wheel gestures.
 clickwheel.addEventListener('pointerdown', function(event) {
-if (!gameMode || gameWon || canvasDisplayWidth === 0 || paddleWidth === 0) return;
+    if (!gameMode || gameWon || canvasDisplayWidth === 0 || paddleWidth === 0) return;
 
-const button = event.target.closest('[data-action]');
-if (!button) return;
+    const button = event.target.closest('[data-action]');
+    if (!button) return;
 
-const action = button.dataset.action;
-if (action !== 'back' && action !== 'forward') return;
+    const action = button.dataset.action;
+    if (action !== 'back' && action !== 'forward') return;
 
-event.preventDefault();
+    event.preventDefault();
 
-keyState.ArrowLeft = action === 'back';
-keyState.ArrowRight = action === 'forward';
+    pendingGameButtonAction = action;
+    gameButtonPointerId = event.pointerId;
+
+    if (gameButtonPressTimer) {
+        clearTimeout(gameButtonPressTimer);
+    }
+
+    // Wait briefly: if the finger starts rotating the wheel, panstart cancels this.
+    gameButtonPressTimer = setTimeout(function() {
+        if (!gameMode || pendingGameButtonAction !== action) return;
+
+        keyState.ArrowLeft = action === 'back';
+        keyState.ArrowRight = action === 'forward';
+        gameButtonPressTimer = null;
+    }, 100);
 });
 
-document.addEventListener('pointerup', function() {
-keyState.ArrowLeft = false;
-keyState.ArrowRight = false;
-});
+function releaseGameButton(event) {
+    if (gameButtonPointerId !== null &&
+        event.pointerId !== undefined &&
+        event.pointerId !== gameButtonPointerId) {
+        return;
+    }
 
-document.addEventListener('pointercancel', function() {
-keyState.ArrowLeft = false;
-keyState.ArrowRight = false;
-});
+    if (gameButtonPressTimer) {
+        clearTimeout(gameButtonPressTimer);
+        gameButtonPressTimer = null;
+    }
+
+    pendingGameButtonAction = null;
+    gameButtonPointerId = null;
+    keyState.ArrowLeft = false;
+    keyState.ArrowRight = false;
+}
+
+document.addEventListener('pointerup', releaseGameButton);
+document.addEventListener('pointercancel', releaseGameButton);
+
 
 clickwheel.addEventListener('click', function(event) {
 const action = event.target.closest('[data-action]')?.dataset.action;
@@ -475,7 +509,7 @@ console.log("gameMode set to true.");
 if (!gameHammerManager) {
 console.log("Initializing Hammer.js manager for circular pan (game)..");
 gameHammerManager = new Hammer.Manager(clickwheel);
-gameHammerManager.add(new Hammer.Pan({ threshold: 0 })); 
+gameHammerManager.add(new Hammer.Pan({ threshold: 8 })); 
 gameHammerManager.on('panstart', onPanStart);
 gameHammerManager.on('panmove', onPanMove);
 gameHammerManager.on('panend', onPanEnd);
