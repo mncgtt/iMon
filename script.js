@@ -10,6 +10,7 @@ let inSettingsMenu = false;
 let inThemeMenu = false;
 let inGamesMenu = false;
 let gameMode = false;
+let gamePanStartedOnButton = false;
 let animationFrameId = null;
 
 let menuHammerManager = null;
@@ -192,51 +193,60 @@ console.log("Settings Pan End.");
 }
 
 function onPanStart(e) {
-if (gameMode) { 
-const rect = clickwheel.getBoundingClientRect();
-const centerX = rect.left + rect.width / 2;
-const centerY = rect.top + rect.height / 2;
+    if (!gameMode) return;
 
-initialClickwheelAngle = Math.atan2(e.center.y - centerY, e.center.x - centerX);
-initialPaddleX = paddleX; 
-}
+    // Ignore gestures starting on directional buttons
+    gamePanStartedOnButton = !!e.srcEvent.target.closest('.button');
+
+    if (gamePanStartedOnButton) return;
+
+    const rect = clickwheel.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    initialClickwheelAngle = Math.atan2(
+        e.center.y - centerY,
+        e.center.x - centerX
+    );
+
+    initialPaddleX = paddleX;
 }
 
 function onPanMove(e) {
-if (gameMode) { 
-const rect = clickwheel.getBoundingClientRect();
-const centerX = rect.left + rect.width / 2;
-const centerY = rect.top + rect.height / 2;
+    if (!gameMode || gamePanStartedOnButton) return;
 
-const currentClickwheelAngle = Math.atan2(e.center.y - centerY, e.center.x - centerX);
+    const rect = clickwheel.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
 
-let angleDelta = currentClickwheelAngle - initialClickwheelAngle;
+    const currentClickwheelAngle = Math.atan2(
+        e.center.y - centerY,
+        e.center.x - centerX
+    );
 
-if (angleDelta > Math.PI) angleDelta -= 2 * Math.PI;
-if (angleDelta < -Math.PI) angleDelta += 2 * Math.PI;
+    let angleDelta = currentClickwheelAngle - initialClickwheelAngle;
 
-const sensitivity = 200;
-let newPaddleX = initialPaddleX + (angleDelta * sensitivity);
+    if (angleDelta > Math.PI) angleDelta -= 2 * Math.PI;
+    if (angleDelta < -Math.PI) angleDelta += 2 * Math.PI;
 
-const minPaddleX = 0;
-const maxPaddleX = canvasDisplayWidth - paddleWidth;
+    const sensitivity = 200;
+    let newPaddleX = initialPaddleX + (angleDelta * sensitivity);
 
-if (newPaddleX < minPaddleX) {
-newPaddleX = minPaddleX;
-} else if (newPaddleX > maxPaddleX) {
-newPaddleX = maxPaddleX;
+    const minPaddleX = 0;
+    const maxPaddleX = canvasDisplayWidth - paddleWidth;
+
+    newPaddleX = Math.max(minPaddleX, Math.min(maxPaddleX, newPaddleX));
+
+    paddleX = newPaddleX;
+
+    if (Math.abs(angleDelta) > Math.PI / 4) {
+        initialClickwheelAngle = currentClickwheelAngle;
+        initialPaddleX = paddleX;
+    }
 }
 
-paddleX = newPaddleX;
-
-if (Math.abs(angleDelta) > Math.PI / 4) {
-initialClickwheelAngle = currentClickwheelAngle;
-initialPaddleX = paddleX;
-}
-}
-}
-
-function onPanEnd(e) { // game paddle
+function onPanEnd(e) {
+    gamePanStartedOnButton = false;
 }
 
 menuHammerManager = new Hammer.Manager(clickwheel);
