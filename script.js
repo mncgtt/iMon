@@ -1189,11 +1189,9 @@ console.log("Cannot launch ball: conditions not met");
 document.getElementById('menu-button').onclick = exitGame; 
 
 
-        document.getElementById('select-button').addEventListener('click', function() {
-            console.log("Select button clicked, calling launchBall");
-            launchBall();
-        });
 document.getElementById('select-button').addEventListener('click', function(event) {
+    if (!gameMode) return;
+
     event.stopPropagation();
     console.log("Select button clicked, calling launchBall");
     launchBall();
