@@ -237,7 +237,7 @@ function onPanMove(e) {
     if (angleDelta > Math.PI) angleDelta -= 2 * Math.PI;
     if (angleDelta < -Math.PI) angleDelta += 2 * Math.PI;
 
-    const sensitivity = 50;
+    const sensitivity = 150;
     let newPaddleX = initialPaddleX + (angleDelta * sensitivity);
 
     const minPaddleX = 0;
