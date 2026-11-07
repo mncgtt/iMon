@@ -1,8 +1,118 @@
 document.addEventListener('DOMContentLoaded', function() {
 const clickwheel = document.getElementById('clickwheel');
-let menuItems = document.querySelectorAll('.menu-item');
-let previewImage = document.getElementById('preview-image');
 const screenEl = document.getElementById('screen');
+
+// The menu panel is animated independently; the right preview panel stays in place.
+function getActiveScreenView() {
+    const panels = screenEl.querySelectorAll('.menu-panel-viewport #display');
+    return panels.length ? panels[panels.length - 1] : (screenEl.querySelector('#display') || screenEl);
+}
+
+let menuItems = getActiveScreenView().querySelectorAll('.menu-item');
+let previewImage = document.getElementById('preview-image');
+
+function ensureMenuPanelViewport() {
+    let viewport = screenEl.querySelector('.menu-panel-viewport');
+    if (viewport) return viewport;
+
+    const display = screenEl.querySelector('#display');
+    if (!display) return null;
+
+    const width = display.getBoundingClientRect().width;
+    viewport = document.createElement('div');
+    viewport.className = 'menu-panel-viewport';
+    viewport.style.width = `${width}px`;
+    viewport.style.flex = `0 0 ${width}px`;
+    viewport.style.height = '100%';
+    display.parentNode.insertBefore(viewport, display);
+    viewport.appendChild(display);
+    display.classList.add('menu-panel-layer');
+    return viewport;
+}
+
+// Slide only the left menu panel. The right preview remains the same fixed DOM element.
+function transitionScreen(html, direction = 'forward') {
+    const template = document.createElement('template');
+    template.innerHTML = html.trim();
+    const incomingDisplay = template.content.querySelector('#display');
+    const incomingPreview = template.content.querySelector('#right-display img');
+
+    if (incomingDisplay) {
+        const viewport = ensureMenuPanelViewport();
+        if (!viewport) {
+            // Returning from a full-screen game: rebuild the regular two-panel layout.
+            screenEl.replaceChildren(...template.content.cloneNode(true).childNodes);
+            return;
+        }
+
+        // Keep the preview panel stationary; only update its image source when supplied.
+        if (incomingPreview) {
+            const fixedPreview = document.getElementById('preview-image');
+            if (fixedPreview && incomingPreview.getAttribute('src')) {
+                fixedPreview.src = incomingPreview.getAttribute('src');
+            }
+        }
+
+        const previousPanel = viewport.querySelector('#display');
+        const nextPanel = incomingDisplay;
+        nextPanel.classList.add('menu-panel-layer');
+        nextPanel.style.transform = direction === 'forward' ? 'translateX(100%)' : 'translateX(-100%)';
+        nextPanel.style.position = 'absolute';
+        nextPanel.style.inset = '0 auto 0 0';
+        nextPanel.style.width = '100%';
+        nextPanel.style.height = '100%';
+        nextPanel.style.zIndex = '2';
+        viewport.appendChild(nextPanel);
+
+        const exitTo = direction === 'forward' ? '-100%' : '100%';
+        const timing = {
+            duration: 280,
+            easing: 'cubic-bezier(0.22, 0.61, 0.36, 1)',
+            fill: 'both'
+        };
+
+        nextPanel.animate(
+            [
+                { transform: direction === 'forward' ? 'translateX(100%)' : 'translateX(-100%)' },
+                { transform: 'translateX(0)' }
+            ], timing
+        );
+
+        if (previousPanel) {
+            previousPanel.style.position = 'absolute';
+            previousPanel.style.inset = '0 auto 0 0';
+            previousPanel.style.width = '100%';
+            previousPanel.style.height = '100%';
+            previousPanel.style.zIndex = '1';
+            previousPanel.style.pointerEvents = 'none';
+            const exitAnimation = previousPanel.animate(
+                [{ transform: 'translateX(0)' }, { transform: `translateX(${exitTo})` }],
+                timing
+            );
+            exitAnimation.onfinish = () => previousPanel.remove();
+        }
+        return;
+    }
+
+    // Full-screen views (e.g. the game) overlay the screen instead of becoming
+    // a second flex child beside the menu. This prevents the canvas being
+    // temporarily squeezed to half width during its entrance.
+    const nextView = document.createElement('div');
+    nextView.className = 'screen-view';
+    nextView.innerHTML = html;
+    Object.assign(nextView.style, {
+        position: 'absolute', inset: '0', width: '100%', height: '100%',
+        flex: '0 0 100%', boxSizing: 'border-box', overflow: 'hidden', zIndex: '5'
+    });
+
+    // Replace the menu view, then fade in the full-screen game without moving
+    // or resizing the canvas.
+    screenEl.replaceChildren(nextView);
+    nextView.animate(
+        [{ opacity: 0 }, { opacity: 1 }],
+        { duration: 160, easing: 'ease-out', fill: 'both' }
+    );
+}
 
 let currentIndex = 0;
 let inSubMenu = false;
@@ -146,7 +256,7 @@ if (angleDiff < -180) angleDiff += 360;
 
 const rotationThreshold = 15;
 
-const themeItems = document.querySelectorAll('.menu-item[data-theme], .menu-item[data-setting]');
+const themeItems = getActiveScreenView().querySelectorAll('.menu-item[data-theme], .menu-item[data-setting]');
 if (themeItems.length === 0) return;
 
 let themeIndex = 0;
@@ -369,14 +479,14 @@ if (action === 'select') {
             } else if (selectedText === "Settings") {
                 showSettingsMenu();
             } else {
-                screenEl.innerHTML = `
+                transitionScreen(`
                     <div style="width:100%; height:100%; display:flex; justify-content:center; align-items:center; background:white;">
                         <div style="text-align:center; width:100%; color:#000;">
                             <h3 style="font-size:3mm;">${selectedText}</h3>
                             <p style="font-size:2mm;">Opening...</p>
                         </div>
                     </div>
-                `;
+                `, 'forward');
                 inSubMenu = true;
             }
         }
@@ -410,7 +520,7 @@ break;
 });
 
 function handleSettingsMenuAction(action) {
-const settingItems = document.querySelectorAll('.menu-item[data-setting]');
+const settingItems = getActiveScreenView().querySelectorAll('.menu-item[data-setting]');
 let settingIndex = 0;
 
 settingItems.forEach((item, index) => {
@@ -449,7 +559,7 @@ break;
 }
 
 function handleThemeMenuAction(action) {
-const themeItems = document.querySelectorAll('.menu-item[data-theme]');
+const themeItems = getActiveScreenView().querySelectorAll('.menu-item[data-theme]');
 let themeIndex = Array.from(themeItems).findIndex(item => item.classList.contains('active'));
 const previewImage = document.getElementById('preview-image');
 
@@ -459,7 +569,7 @@ const selectedTheme = themeItems[themeIndex].dataset.theme;
 applyTheme(selectedTheme);
 break;
 case 'menu':
-showSettingsMenu();
+showSettingsMenu('back');
 break;
 case 'forward':
 if (themeIndex < themeItems.length - 1) {
@@ -489,7 +599,7 @@ break;
 }
 
 function handleGamesMenuAction(action) {
-const gameItems = document.querySelectorAll('.menu-item[data-game]');
+const gameItems = getActiveScreenView().querySelectorAll('.menu-item[data-game]');
 let gameIndex = 0;
 
 gameItems.forEach((item, index) => {
@@ -502,7 +612,7 @@ switch(action) {
 case 'select':
 const selectedGame = gameItems[gameIndex].dataset.game;
 if (selectedGame === "breakout") {
-screenEl.innerHTML = `<canvas id="breakout-game" style="background:black; display:block; margin:auto; width:100%; height:100%;"></canvas>`;
+transitionScreen(`<canvas id="breakout-game" style="background:black; display:block; margin:auto; width:100%; height:100%;"></canvas>`, 'forward');
 
 const screenRect = screenEl.getBoundingClientRect();
 initBreakoutGame(screenRect.width, screenRect.height);
@@ -606,9 +716,9 @@ const menuHTML = `
            </div>
        `;
 
-screenEl.innerHTML = menuHTML;
+transitionScreen(menuHTML, 'back');
 
-menuItems = document.querySelectorAll('.menu-item');
+menuItems = getActiveScreenView().querySelectorAll('.menu-item');
 previewImage = document.getElementById('preview-image');
 
 currentIndex = 0; 
@@ -621,7 +731,7 @@ previewImage.src = menuItems[currentIndex].dataset.preview;
 console.log("Menu restored. New currentIndex:", currentIndex);
 }
 
-function showSettingsMenu() {
+function showSettingsMenu(direction = 'forward') {
 inSubMenu = true;
 inSettingsMenu = true;
 inThemeMenu = false;
@@ -630,7 +740,7 @@ inGamesMenu = false;
 menuHammerManager.set({ enable: false });
 settingsHammerManager.set({ enable: true });
 
-screenEl.innerHTML = `
+transitionScreen(`
            <div id="display" style="width:100%;">
                <div id="menu-title">Settings</div>
                <div id="menu-container">
@@ -639,7 +749,7 @@ screenEl.innerHTML = `
                    </ul>
                </div>
            </div>
-       `;
+       ` , direction);
 }
 
 function showThemeMenu() {
@@ -657,7 +767,7 @@ dark: "images/dark-theme-preview.png",
 mint: "images/mint-theme-preview.png"
 };
 
-screenEl.innerHTML = `
+transitionScreen(`
            <div id="display">
                <div id="menu-title">Device Theme</div>
                <div id="menu-container">
@@ -671,9 +781,9 @@ screenEl.innerHTML = `
            <div id="right-display">
                <img src="${themePreviews[currentTheme]}" alt="Preview" class="display-icon" id="preview-image">
            </div>
-       `;
+       `, 'forward');
 
-const themeItems = document.querySelectorAll('.menu-item[data-theme]');
+const themeItems = getActiveScreenView().querySelectorAll('.menu-item[data-theme]');
 let themeIndex = Array.from(themeItems).findIndex(item => item.classList.contains('active'));
 const previewImage = document.getElementById('preview-image');
 
@@ -703,7 +813,7 @@ menuHammerManager.set({ enable: false });
 
 const gamePreview = "images/bricks-breaker-preview.png";
 
-screenEl.innerHTML = `
+transitionScreen(`
            <div id="display">
                <div id="menu-title">Games</div>
                <div id="menu-container">
@@ -715,7 +825,7 @@ screenEl.innerHTML = `
            <div id="right-display">
                <img src="${gamePreview}" alt="Preview" class="display-icon" id="preview-image">
            </div>
-       `;
+       `, 'forward');
 }
 
 function applyTheme(theme) {
