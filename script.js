@@ -1145,7 +1145,6 @@ drawBall();
 
 animationFrameId = requestAnimationFrame(draw); 
 }
-});
 
 function startGame() {
 if (!running && paused) { 
@@ -1317,6 +1316,7 @@ window.startGame();
     }
 }
 }
+}
 
 document.addEventListener('keydown', handleKeyboardInput);
 document.addEventListener('keyup', handleKeyboardInput);
@@ -1325,8 +1325,4 @@ menuItems[currentIndex].classList.add('active');
 menuItems[currentIndex].scrollIntoView({ block: 'nearest' });
 previewImage.src = menuItems[currentIndex].dataset.preview;
 
-function draw() {
-}
-
-animationFrameId = requestAnimationFrame(draw); 
 });
