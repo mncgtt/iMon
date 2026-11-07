@@ -420,3 +420,56 @@ body {
   background: transparent !important;
   color: inherit !important;
 }
+
+
+/* Only the left menu panel slides; the right preview panel stays fixed. */
+#screen {
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-panel-viewport {
+  position: relative;
+  flex: 0 0 auto;
+  height: 100%;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.menu-panel-layer {
+  box-sizing: border-box;
+  will-change: transform;
+}
+
+.menu-panel-viewport > #display {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 100%;
+  height: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-panel-layer {
+    will-change: auto;
+  }
+}
+
+
+/* Full-screen game/view layer: keep it out of the screen's horizontal flex flow. */
+#screen > .screen-view {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  flex: 0 0 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+#screen > .screen-view #breakout-game {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
