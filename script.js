@@ -348,46 +348,40 @@ return;
 }
 
 if (action === 'select') {
-if (gameMode) {
-    console.log("SELECT IN GAME");
-    console.log("gameLaunchBall:", typeof window.gameLaunchBall);
-    console.log("ballAttachedToPaddle:", ballAttachedToPaddle);
-    console.log("paused:", paused);
+    if (gameMode) {
+        if (typeof window.gameLaunchBall === 'function') {
+            window.gameLaunchBall();
+        }
+    } else {
+        const selectedText = menuItems[currentIndex].textContent.trim();
 
-    if (typeof window.gameLaunchBall === 'function') {
-        window.gameLaunchBall();
+        if (links[selectedText]) {
+            if (selectedText === "CV") {
+                downloadCV();
+            } else if (selectedText === "Mail") {
+                window.location.href = links[selectedText];
+            } else {
+                window.open(links[selectedText], '_blank');
+            }
+        } else {
+            if (selectedText === "Games") {
+                showGamesMenu();
+            } else if (selectedText === "Settings") {
+                showSettingsMenu();
+            } else {
+                screenEl.innerHTML = `
+                    <div style="width:100%; height:100%; display:flex; justify-content:center; align-items:center; background:white;">
+                        <div style="text-align:center; width:100%; color:#000;">
+                            <h3 style="font-size:3mm;">${selectedText}</h3>
+                            <p style="font-size:2mm;">Opening...</p>
+                        </div>
+                    </div>
+                `;
+                inSubMenu = true;
+            }
+        }
     }
-}
-} else {
-const selectedText = menuItems[currentIndex].textContent.trim();
-if (links[selectedText]) {
-if (selectedText === "CV") {
-downloadCV();
-} else if (selectedText === "Mail") {
-window.location.href = links[selectedText];
-} else {
-window.open(links[selectedText], '_blank');
-}
-} else {
-if (selectedText === "Games") {
-showGamesMenu();
-} else if (selectedText === "Settings") {
-showSettingsMenu();
-} else {
-screenEl.innerHTML = `
-                           <div style="width:100%; height:100%; display:flex; justify-content:center; align-items:center; background:white;">
-                               <div style="text-align:center; width:100%; color:#000;">
-                                   <h3 style="font-size:3mm;">${selectedText}</h3>
-                                   <p style="font-size:2mm;">Opening...</p>
-                               </div>
-                           </div>
-                       `;
-
-inSubMenu = true;
-}
-}
-}
-return;
+    return;
 }
 
 if (gameMode) {
