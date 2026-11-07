@@ -1257,25 +1257,64 @@ window.startGame();
 }
 }
 } else if (!gameMode && event.type === 'keydown') {
-if (event.key === "Enter") {
-const selectedText = menuItems[currentIndex].textContent.trim();
-if (links[selectedText]) {
-if (selectedText === "Mail") {
-window.location.href = links[selectedText];
-} else {
-window.open(links[selectedText], '_blank');
-}
-} else if (selectedText === "Games") {
-startBreakoutGame();
-} else if (selectedText === "Settings") {
-showSettingsMenu();
-}
-} else if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
-updateSelection(currentIndex - 1);
-} else if (event.key === "ArrowDown" || event.key === "ArrowRight") {
-updateSelection(currentIndex + 1);
-}
-}
+
+    if (inSettingsMenu) {
+        if (event.key === "Enter") {
+            handleSettingsMenuAction('select');
+        } else if (event.key === "ArrowDown" || event.key === "ArrowRight") {
+            handleSettingsMenuAction('forward');
+        } else if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
+            handleSettingsMenuAction('back');
+        }
+
+    } else if (inThemeMenu) {
+        if (event.key === "Enter") {
+            handleThemeMenuAction('select');
+        } else if (event.key === "ArrowDown" || event.key === "ArrowRight") {
+            handleThemeMenuAction('forward');
+        } else if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
+            handleThemeMenuAction('back');
+        }
+
+    } else if (inGamesMenu) {
+        if (event.key === "Enter") {
+            handleGamesMenuAction('select');
+        } else if (event.key === "ArrowDown" || event.key === "ArrowRight") {
+            handleGamesMenuAction('forward');
+        } else if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
+            handleGamesMenuAction('back');
+        }
+
+    } else if (inSubMenu) {
+        if (event.key === "Escape") {
+            restoreMenu();
+        }
+
+    } else {
+        if (event.key === "Enter") {
+            const selectedText = menuItems[currentIndex].textContent.trim();
+
+            if (links[selectedText]) {
+                if (selectedText === "CV") {
+                    downloadCV();
+                } else if (selectedText === "Mail") {
+                    window.location.href = links[selectedText];
+                } else {
+                    window.open(links[selectedText], '_blank');
+                }
+            } else if (selectedText === "Games") {
+                showGamesMenu();
+            } else if (selectedText === "Settings") {
+                showSettingsMenu();
+            }
+
+        } else if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
+            updateSelection(currentIndex - 1);
+
+        } else if (event.key === "ArrowDown" || event.key === "ArrowRight") {
+            updateSelection(currentIndex + 1);
+        }
+    }
 }
 
 document.addEventListener('keydown', handleKeyboardInput);
