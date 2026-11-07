@@ -1313,8 +1313,8 @@ window.startGame();
 
         } else if (event.key === "ArrowDown" || event.key === "ArrowRight") {
             updateSelection(currentIndex + 1);
-        }
     }
+}
 }
 
 document.addEventListener('keydown', handleKeyboardInput);
