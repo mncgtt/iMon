@@ -349,7 +349,15 @@ return;
 
 if (action === 'select') {
 if (gameMode) {
-    window.gameLaunchBall();
+    console.log("SELECT IN GAME");
+    console.log("gameLaunchBall:", typeof window.gameLaunchBall);
+    console.log("ballAttachedToPaddle:", ballAttachedToPaddle);
+    console.log("paused:", paused);
+
+    if (typeof window.gameLaunchBall === 'function') {
+        window.gameLaunchBall();
+    }
+}
 } else {
 const selectedText = menuItems[currentIndex].textContent.trim();
 if (links[selectedText]) {
