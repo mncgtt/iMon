@@ -349,7 +349,7 @@ return;
 
 if (action === 'select') {
 if (gameMode) {
-launchBall();
+    window.gameLaunchBall();
 } else {
 const selectedText = menuItems[currentIndex].textContent.trim();
 if (links[selectedText]) {
