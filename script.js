@@ -1145,6 +1145,7 @@ drawBall();
 
 animationFrameId = requestAnimationFrame(draw); 
 }
+});
 
 function startGame() {
 if (!running && paused) { 
