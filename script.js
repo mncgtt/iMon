@@ -55,6 +55,18 @@ function transitionScreen(html, direction = 'forward') {
 
         const previousPanel = viewport.querySelector('#display');
         const nextPanel = incomingDisplay;
+        if (direction === 'none') {
+    nextPanel.classList.add('menu-panel-layer');
+    nextPanel.style.position = 'absolute';
+    nextPanel.style.inset = '0 auto 0 0';
+    nextPanel.style.width = '100%';
+    nextPanel.style.height = '100%';
+    nextPanel.style.zIndex = '2';
+
+    if (previousPanel) previousPanel.remove();
+    viewport.appendChild(nextPanel);
+    return;
+}
         nextPanel.classList.add('menu-panel-layer');
         nextPanel.style.transform = direction === 'forward' ? 'translateX(100%)' : 'translateX(-100%)';
         nextPanel.style.position = 'absolute';
@@ -716,7 +728,7 @@ const menuHTML = `
            </div>
        `;
 
-transitionScreen(menuHTML, 'back');
+transitionScreen(menuHTML, 'none');
 
 menuItems = getActiveScreenView().querySelectorAll('.menu-item');
 previewImage = document.getElementById('preview-image');
