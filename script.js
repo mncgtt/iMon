@@ -326,6 +326,7 @@ document.addEventListener('pointercancel', releaseGameButton);
 
 clickwheel.addEventListener('click', function(event) {
 const action = event.target.closest('[data-action]')?.dataset.action;
+console.log('CLICKWHEEL:', event.target, 'gameMode:', gameMode);
 if (!action) return;
 
 if (inSettingsMenu) {
